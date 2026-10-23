@@ -9,6 +9,7 @@ import * as demo from "@/lib/demo/data";
 import { computeAlerts, totalQuantity } from "@/lib/domain/deadlines";
 import type { ActivityEntry, Buyer, Member, Milestone, PurchaseOrder } from "@/lib/domain/types";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
+import type { ReviewExtraction } from "@/lib/ai/extraction";
 
 export const DATA_SOURCE: "demo" | "live" = isSupabaseConfigured ? "live" : "demo";
 
@@ -103,8 +104,35 @@ export async function listActivity(): Promise<ActivityEntry[]> {
   return demo.activity;
 }
 
-export async function getSampleExtraction() {
-  return demo.sampleExtraction;
+/** The built-in sample shown on the review screen in demo mode. */
+export async function getSampleExtraction(): Promise<ReviewExtraction> {
+  return { ...demo.sampleExtraction, documentUrl: null, currency: "USD", extraItems: [] };
+}
+
+/** A stored AI extraction (live mode only). */
+export async function getExtraction(jobId: string) {
+  if (!isSupabaseConfigured) return null;
+  return (await live()).getExtraction(jobId);
+}
+
+export type { DocumentRow } from "./supabase";
+
+export async function listDocuments(): Promise<import("./supabase").DocumentRow[]> {
+  if (isSupabaseConfigured) return (await live()).listDocuments();
+  const member = new Map(demo.members.map((m) => [m.id, m.fullName]));
+  const po = new Map(demo.purchaseOrders.map((p) => [p.id, p.poNumber]));
+  return demo.documents.map((d) => ({
+    id: d.id,
+    fileName: d.fileName,
+    kind: d.kind,
+    sizeBytes: d.sizeBytes,
+    uploadedAt: d.uploadedAt,
+    uploadedBy: member.get(d.uploadedBy) ?? "Team member",
+    poId: d.poId,
+    poNumber: d.poId ? (po.get(d.poId) ?? null) : null,
+    extraction: d.kind === "purchase_order" ? { jobId: "sample", status: "approved" as const } : null,
+    lastJobFailed: null,
+  }));
 }
 
 /** Cross-company aggregates for platform admins (live version: Phase 8). */

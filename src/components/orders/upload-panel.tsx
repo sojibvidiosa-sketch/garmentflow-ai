@@ -1,8 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState, type DragEvent } from "react";
-import { FileText, Mail, ShieldCheck, Trash2, UploadCloud } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useRef, useState, useTransition, type DragEvent } from "react";
+import { FileText, Loader2, Mail, ShieldCheck, Trash2, UploadCloud } from "lucide-react";
+import { useUploader } from "@/components/documents/use-uploader";
+import { extractDocument, extractEmailText } from "@/lib/actions/documents";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Field, Textarea } from "@/components/ui/form";
@@ -12,7 +15,18 @@ import { ACCEPTED_TYPES, formatBytes, validateEmailText, validateUpload } from "
 
 type Mode = "file" | "email";
 
-export function UploadPanel() {
+type Kind = "purchase_order" | "tech_pack";
+
+/**
+ * Screen 09. Live mode: upload to private storage → AI extraction → review.
+ * Demo mode: validates the input and explains that nothing is processed.
+ */
+export function UploadPanel({ live }: { live: boolean }) {
+  const router = useRouter();
+  const uploader = useUploader();
+  const [kind, setKind] = useState<Kind>("purchase_order");
+  const [step, setStep] = useState<string | null>(null);
+  const [busy, startBusy] = useTransition();
   const [mode, setMode] = useState<Mode>("file");
   const [file, setFile] = useState<File | null>(null);
   const [emailText, setEmailText] = useState("");
@@ -38,7 +52,27 @@ export function UploadPanel() {
   function submit() {
     const problem = mode === "file" ? (file ? null : "Choose a document to upload.") : validateEmailText(emailText);
     setError(problem);
-    setAttempted(!problem);
+    if (problem) return;
+    if (!live) return setAttempted(true);
+    startBusy(async () => {
+      let jobId: string | undefined;
+      if (mode === "file" && file) {
+        setStep("Uploading to your private storage…");
+        const documentId = await uploader.upload(file, kind);
+        if (!documentId) return (setError(uploader.error ?? "Upload failed."), setStep(null));
+        setStep("Reading the document with AI… this usually takes 10–40 seconds.");
+        const res = await extractDocument(documentId);
+        if (!res.ok) return (setError(`${res.error} The document is saved in the document center.`), setStep(null));
+        jobId = res.data;
+      } else {
+        setStep("Reading the email with AI…");
+        const res = await extractEmailText(emailText);
+        if (!res.ok) return (setError(res.error), setStep(null));
+        jobId = res.data;
+      }
+      setStep("Opening the review screen…");
+      router.push(`/orders/review/${jobId}`);
+    });
   }
 
   return (
@@ -122,18 +156,37 @@ export function UploadPanel() {
             </Field>
           )}
 
+          {mode === "file" && (
+            <div className="flex flex-wrap items-center gap-4 text-[13px]" role="radiogroup" aria-label="Document type">
+              {([["purchase_order", "Purchase order"], ["tech_pack", "Tech pack"]] as const).map(([v, l]) => (
+                <label key={v} className="flex items-center gap-2">
+                  <input type="radio" name="kind" checked={kind === v} onChange={() => setKind(v)} className="accent-violet" /> {l}
+                </label>
+              ))}
+            </div>
+          )}
+
+          {step && (
+            <div className="flex items-center gap-3 rounded-control border border-violet/20 bg-violet-light px-4 py-3 text-[13px] text-violet" role="status">
+              <Loader2 className="size-4 animate-spin" /> {step}
+            </div>
+          )}
+
           {error && <Notice tone="error" title="Unable to use this input">{error}</Notice>}
 
           {attempted && (
-            <Notice tone="warning" title="AI extraction is not connected yet">
-              Your input passed validation, but nothing was uploaded or sent to AI. Secure storage and OpenAI extraction are built in Phase 4. You can preview the{" "}
+            <Notice tone="warning" title="Demo mode: nothing was uploaded">
+              Your input passed validation, but the demo does not upload files or call AI. Create a workspace to use real extraction, or preview the{" "}
               <Link href="/orders/review/sample" className="font-semibold underline">review screen with a sample document</Link>.
             </Notice>
           )}
 
           <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-5">
             <ButtonLink href="/orders/review/sample" variant="ghost">Preview sample review</ButtonLink>
-            <Button onClick={submit}>Extract order details</Button>
+            <div className="flex flex-wrap gap-2">
+              <ButtonLink href="/orders/create" variant="secondary">Enter manually</ButtonLink>
+              <Button onClick={submit} loading={busy}>Extract order details</Button>
+            </div>
           </div>
         </CardBody>
       </Card>

@@ -243,3 +243,63 @@ export async function getReportData() {
   const [orders, milestones, buyers, members, activity] = await Promise.all([fetchOrders(ctx), fetchMilestones(ctx), listBuyers(), listMembers(), listActivity()]);
   return { orders, milestones, buyers, members, activity, today: ctx.today };
 }
+
+/** A stored AI extraction, ready for the review screen. */
+export async function getExtraction(jobId: string) {
+  if (!UUID.test(jobId)) return null;
+  const ctx = await getContext();
+  const { data } = await ctx.supabase.from("extraction_results").select("status, raw, document_id, po_id").eq("ai_job_id", jobId).maybeSingle();
+  if (!data) return null;
+  const { parseExtraction, toReviewFields } = await import("@/lib/ai/extraction");
+  const raw = data.raw as { reply: unknown; file_name?: string; source_text?: string };
+  let documentUrl: string | null = null;
+  if (data.document_id) {
+    const { data: doc } = await ctx.supabase.from("documents").select("storage_path").eq("id", data.document_id).maybeSingle();
+    if (doc) documentUrl = (await ctx.supabase.storage.from("documents").createSignedUrl(doc.storage_path, 60 * 30)).data?.signedUrl ?? null;
+  }
+  return {
+    status: data.status as "needs_review" | "approved" | "rejected",
+    poId: data.po_id as string | null,
+    extraction: toReviewFields(parseExtraction(raw.reply), { fileName: raw.file_name ?? "Document", sourceText: raw.source_text ?? "", documentUrl }),
+  };
+}
+
+export interface DocumentRow {
+  id: string;
+  fileName: string;
+  kind: PoDocument["kind"];
+  sizeBytes: number;
+  uploadedAt: string;
+  uploadedBy: string;
+  poId: string | null;
+  poNumber: string | null;
+  extraction: { jobId: string; status: "needs_review" | "approved" | "rejected" } | null;
+  lastJobFailed: string | null;
+}
+
+export async function listDocuments(): Promise<DocumentRow[]> {
+  const ctx = await getContext();
+  const [{ data: docs }, members, { data: results }, { data: jobs }] = await Promise.all([
+    ctx.supabase.from("documents").select("id, file_name, kind, size_bytes, created_at, uploaded_by, po_id, purchase_orders(po_number)").eq("company_id", ctx.companyId).order("created_at", { ascending: false }).limit(500),
+    listMembers(),
+    ctx.supabase.from("extraction_results").select("ai_job_id, document_id, status, created_at").eq("company_id", ctx.companyId).order("created_at", { ascending: false }),
+    ctx.supabase.from("ai_jobs").select("document_id, status, error, created_at").eq("company_id", ctx.companyId).eq("kind", "extraction").order("created_at", { ascending: false }).limit(500),
+  ]);
+  const name = new Map(members.map((m) => [m.id, m.fullName]));
+  return (docs ?? []).map((d) => {
+    const ex = results?.find((r) => r.document_id === d.id);
+    const job = jobs?.find((j) => j.document_id === d.id);
+    return {
+      id: d.id,
+      fileName: d.file_name,
+      kind: d.kind,
+      sizeBytes: d.size_bytes,
+      uploadedAt: d.created_at,
+      uploadedBy: name.get(d.uploaded_by ?? "") ?? "Team member",
+      poId: d.po_id,
+      poNumber: (d.purchase_orders as unknown as { po_number: string } | null)?.po_number ?? null,
+      extraction: ex ? { jobId: ex.ai_job_id, status: ex.status } : null,
+      lastJobFailed: job?.status === "failed" ? "AI could not read this file last time." : null,
+    };
+  });
+}
