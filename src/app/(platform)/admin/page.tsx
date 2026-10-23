@@ -21,7 +21,17 @@ const SUB: Record<Company["subscription"], { label: string; tone: Tone }> = {
 const JOB_KIND = { extraction: "Document extraction", email_draft: "Email draft", report_summary: "Report summary" } as const;
 
 export default async function AdminPage() {
-  const { companies, jobs } = await getPlatformOverview();
+  const { companies, jobs, available } = await getPlatformOverview();
+  if (!available) {
+    return (
+      <>
+        <PageHeader title="Platform Admin Dashboard" description="Operating overview across all customer companies." />
+        <div className="rounded-card border border-border bg-surface p-6 text-[13px] text-secondary">
+          Cross-company usage, billing and AI-cost aggregates are connected in Phase 8. Customer orders and documents are never shown here.
+        </div>
+      </>
+    );
+  }
   const companyName = new Map(companies.map((c) => [c.id, c.name]));
   const users = companies.reduce((s, c) => s + c.activeUsers, 0);
   const aiJobs = companies.reduce((s, c) => s + c.aiJobs30d, 0);

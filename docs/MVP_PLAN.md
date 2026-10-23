@@ -108,12 +108,13 @@ Screen numbers match the Figma file (`00 · Product Map`).
 - [x] All 12 MVP screens on demo data; client interactions that need no backend
 - [x] Deterministic deadline rules, reports, CSV, upload validation + 18 unit tests
 
-**Phase 2 — Supabase & Auth** (blocks everything below)
-- [ ] Supabase project (Singapore region — closest to Dhaka), CLI, migrations for all tables
-- [ ] RLS policies + helper functions; storage bucket + policies
-- [ ] `@supabase/ssr` clients, `proxy.ts` route protection, login/logout/reset/invite flows
-- [ ] Company switcher + role checks; replace `lib/data` bodies with queries
-- [ ] Seed script with the fictional dataset; RLS test suite (cross-company)
+**Phase 2 — Supabase & Auth** (code ✅, waiting for your Supabase + Vercel accounts — see `docs/GO_LIVE.md`)
+- [x] Migrations for all tables, RLS policies + helper functions, storage bucket + policies, audit trigger
+- [x] RLS test suite in PGlite: cross-company read/write, child rows, membership escalation, viewer role, storage, platform admin, anon (10 tests)
+- [x] `@supabase/ssr` clients, `proxy.ts` route protection, sign up / sign in / sign out / reset / new password, email confirm route
+- [x] Onboarding (create workspace), live data layer for every screen, "Load sample data" for new workspaces
+- [ ] Invite teammates UI + company switcher (backend RPC `accept_invitation` ready)
+- [ ] Apply migrations on the real Supabase project and smoke-test sign-up end to end
 
 **Phase 3 — Purchase orders:** create/edit forms, status changes, assignment, notes, revisions trigger, server pagination.
 

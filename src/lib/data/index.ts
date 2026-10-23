@@ -1,32 +1,39 @@
 /**
  * Data access layer. Every page reads data through these functions only.
  *
- * Phase 1: returns the fictional demo dataset (DATA_SOURCE = "demo").
- * Phase 2: these bodies are replaced with Supabase queries scoped to the
- * signed-in user's company (enforced again by Row Level Security), so pages
- * and components do not need to change.
+ * - Demo mode (no Supabase keys): the fictional dataset in lib/demo.
+ * - Live mode: Supabase queries as the signed-in user, scoped to their active
+ *   company and enforced again by Row Level Security (lib/data/supabase.ts).
  */
 import * as demo from "@/lib/demo/data";
 import { computeAlerts, totalQuantity } from "@/lib/domain/deadlines";
-import type { Buyer, Member, Milestone, PurchaseOrder } from "@/lib/domain/types";
+import type { ActivityEntry, Buyer, Member, Milestone, PurchaseOrder } from "@/lib/domain/types";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
 
-export const DATA_SOURCE = "demo" as const;
+export const DATA_SOURCE: "demo" | "live" = isSupabaseConfigured ? "live" : "demo";
+
+// Loaded lazily so demo mode (and unit tests) never import server-only code.
+const live = () => import("./supabase");
 
 /** The calendar day deadline rules are evaluated against. */
-export function getToday(): string {
+export async function getToday(): Promise<string> {
+  if (isSupabaseConfigured) return (await live()).dhakaToday();
   return demo.DEMO_TODAY;
 }
 
 export async function getWorkspace() {
+  if (isSupabaseConfigured) return (await live()).getWorkspace();
   const user = demo.members.find((m) => m.id === demo.CURRENT_USER_ID)!;
-  return { companyName: demo.DEMO_COMPANY_NAME, user, today: getToday(), source: DATA_SOURCE };
+  return { companyName: demo.DEMO_COMPANY_NAME, user, today: demo.DEMO_TODAY, source: "demo" as const };
 }
 
 export async function listMembers(): Promise<Member[]> {
+  if (isSupabaseConfigured) return (await live()).listMembers();
   return demo.members;
 }
 
 export async function listBuyers(): Promise<Buyer[]> {
+  if (isSupabaseConfigured) return (await live()).listBuyers();
   return demo.buyers;
 }
 
@@ -50,6 +57,7 @@ function lookups() {
 }
 
 export async function listPurchaseOrders(): Promise<PoRow[]> {
+  if (isSupabaseConfigured) return (await live()).listPurchaseOrders();
   const { buyer, member } = lookups();
   return demo.purchaseOrders.map((po) => ({
     id: po.id,
@@ -65,6 +73,7 @@ export async function listPurchaseOrders(): Promise<PoRow[]> {
 }
 
 export async function getPurchaseOrder(id: string) {
+  if (isSupabaseConfigured) return (await live()).getPurchaseOrder(id);
   const po = demo.purchaseOrders.find((p) => p.id === id);
   if (!po) return null;
   const { buyer, member } = lookups();
@@ -80,14 +89,17 @@ export async function getPurchaseOrder(id: string) {
 }
 
 export async function listMilestones(): Promise<Milestone[]> {
+  if (isSupabaseConfigured) return (await live()).listMilestones();
   return demo.milestones;
 }
 
 export async function listAlerts() {
-  return computeAlerts(demo.purchaseOrders, demo.milestones, getToday());
+  if (isSupabaseConfigured) return (await live()).listAlerts();
+  return computeAlerts(demo.purchaseOrders, demo.milestones, demo.DEMO_TODAY);
 }
 
-export async function listActivity() {
+export async function listActivity(): Promise<ActivityEntry[]> {
+  if (isSupabaseConfigured) return (await live()).listActivity();
   return demo.activity;
 }
 
@@ -95,18 +107,21 @@ export async function getSampleExtraction() {
   return demo.sampleExtraction;
 }
 
+/** Cross-company aggregates for platform admins (live version: Phase 8). */
 export async function getPlatformOverview() {
-  return { companies: demo.companies, jobs: demo.aiJobs };
+  if (isSupabaseConfigured) return { companies: [], jobs: [], available: false };
+  return { companies: demo.companies, jobs: demo.aiJobs, available: true };
 }
 
 /** Raw tables, used by reports which aggregate across them. */
 export async function getReportData() {
+  if (isSupabaseConfigured) return (await live()).getReportData();
   return {
     orders: demo.purchaseOrders,
     milestones: demo.milestones,
     buyers: demo.buyers,
     members: demo.members,
     activity: demo.activity,
-    today: getToday(),
+    today: demo.DEMO_TODAY,
   };
 }

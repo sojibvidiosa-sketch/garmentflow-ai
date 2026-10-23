@@ -1,79 +1,61 @@
 "use client";
 
 import Link from "next/link";
-import { useState, type FormEvent } from "react";
+import { useSearchParams } from "next/navigation";
+import { useActionState, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
-import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/form";
 import { Notice } from "@/components/ui/states";
+import { signIn, type FormState } from "@/lib/auth/actions";
 
-const schema = z.object({
-  email: z.email("Enter a valid work email address."),
-  password: z.string().min(8, "Password must be at least 8 characters."),
-});
+export function PasswordInput({ id, name, autoComplete, error }: { id: string; name: string; autoComplete: string; error?: string }) {
+  const [show, setShow] = useState(false);
+  return (
+    <div className="relative">
+      <Input
+        id={id}
+        name={name}
+        type={show ? "text" : "password"}
+        autoComplete={autoComplete}
+        placeholder="••••••••"
+        className="pr-10"
+        aria-invalid={!!error}
+        aria-describedby={error ? `${id}-error` : undefined}
+      />
+      <button type="button" onClick={() => setShow((v) => !v)} className="absolute top-1/2 right-2 -translate-y-1/2 rounded p-1.5 text-secondary hover:bg-subtle" aria-label={show ? "Hide password" : "Show password"}>
+        {show ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+      </button>
+    </div>
+  );
+}
 
-type Errors = Partial<Record<"email" | "password", string>>;
-
-/**
- * Phase 1: validates input only. Real sign-in (Supabase Auth, server-side
- * session cookies, company membership check) is implemented in Phase 2 — the
- * form deliberately does NOT pretend to log anyone in.
- */
-export function LoginForm() {
-  const [errors, setErrors] = useState<Errors>({});
-  const [showPassword, setShowPassword] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-
-  function onSubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const data = Object.fromEntries(new FormData(e.currentTarget));
-    const result = schema.safeParse(data);
-    if (!result.success) {
-      const next: Errors = {};
-      for (const issue of result.error.issues) next[issue.path[0] as keyof Errors] ??= issue.message;
-      setErrors(next);
-      setSubmitted(false);
-      return;
-    }
-    setErrors({});
-    setSubmitted(true);
-  }
+export function LoginForm({ enabled }: { enabled: boolean }) {
+  const next = useSearchParams().get("next");
+  const [state, action, pending] = useActionState<FormState, FormData>(signIn, {});
+  const fe = state.fieldErrors ?? {};
 
   return (
-    <form onSubmit={onSubmit} noValidate className="mt-10 space-y-6">
-      <Field label="Email address" htmlFor="email" error={errors.email}>
-        <Input id="email" name="email" type="email" autoComplete="email" placeholder="you@company.com" aria-invalid={!!errors.email} aria-describedby={errors.email ? "email-error" : undefined} />
+    <form action={action} noValidate className="mt-10 space-y-6">
+      <input type="hidden" name="next" value={next ?? "/dashboard"} />
+      <Field label="Email address" htmlFor="email" error={fe.email}>
+        <Input id="email" name="email" type="email" autoComplete="email" placeholder="you@company.com" aria-invalid={!!fe.email} />
       </Field>
-      <Field label="Password" htmlFor="password" error={errors.password}>
-        <div className="relative">
-          <Input
-            id="password"
-            name="password"
-            type={showPassword ? "text" : "password"}
-            autoComplete="current-password"
-            placeholder="••••••••"
-            className="pr-10"
-            aria-invalid={!!errors.password}
-            aria-describedby={errors.password ? "password-error" : undefined}
-          />
-          <button type="button" onClick={() => setShowPassword((v) => !v)} className="absolute top-1/2 right-2 -translate-y-1/2 rounded p-1.5 text-secondary hover:bg-subtle" aria-label={showPassword ? "Hide password" : "Show password"}>
-            {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-          </button>
-        </div>
+      <Field label="Password" htmlFor="password" error={fe.password}>
+        <PasswordInput id="password" name="password" autoComplete="current-password" error={fe.password} />
       </Field>
 
-      {submitted && (
-        <Notice tone="warning" title="Sign-in is not connected yet">
-          Secure authentication is built in Phase 2. Until then you can explore the{" "}
-          <Link href="/dashboard" className="font-semibold underline">demo workspace</Link> with fictional data.
+      {!enabled && (
+        <Notice tone="warning" title="Sign-in is not connected on this demo site">
+          Explore the <Link href="/dashboard" className="font-semibold underline">demo workspace</Link> with fictional data.
         </Notice>
       )}
+      {state.error && enabled && <Notice tone="error">{state.error}</Notice>}
 
-      <Button type="submit" className="w-full">Sign in</Button>
-      <div className="flex justify-between text-caption font-medium">
+      <Button type="submit" className="w-full" loading={pending} disabled={!enabled}>Sign in</Button>
+      <div className="flex flex-wrap justify-between gap-2 text-caption font-medium">
         <Link href="/forgot-password" className="text-violet hover:underline">Forgot password?</Link>
-        <a href="mailto:support@garmentflow.example" className="text-violet hover:underline">Contact support</a>
+        <Link href="/signup" className="text-violet hover:underline">Create a workspace</Link>
       </div>
     </form>
   );

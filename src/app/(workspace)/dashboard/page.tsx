@@ -7,7 +7,8 @@ import { MetricCard } from "@/components/ui/metric-card";
 import { PageHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/states";
 import { DeadlineBadge, SeverityBadge } from "@/components/domain/status-badges";
-import { getReportData, listAlerts } from "@/lib/data";
+import { SampleDataCard } from "@/components/layout/sample-data-card";
+import { DATA_SOURCE, getReportData, listAlerts } from "@/lib/data";
 import { deadlineState } from "@/lib/domain/deadlines";
 import { MILESTONE_LABEL, PO_STATUS } from "@/lib/domain/labels";
 import type { PoStatus } from "@/lib/domain/types";
@@ -42,6 +43,8 @@ export default async function DashboardPage() {
         description="Merchandising performance across all active orders."
         actions={<ButtonLink href="/orders/new" icon={<Plus className="size-4" />}>New order</ButtonLink>}
       />
+
+      {DATA_SOURCE === "live" && orders.length === 0 && <SampleDataCard />}
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <MetricCard label="Active purchase orders" value={active.length} hint="Open" tone="violet" href="/orders" />

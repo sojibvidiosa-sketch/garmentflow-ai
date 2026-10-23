@@ -8,7 +8,8 @@ import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { EmptyState, Skeleton } from "@/components/ui/states";
 import { DeadlineBadge, MilestoneStatusBadge, PoStatusBadge } from "@/components/domain/status-badges";
-import { getPurchaseOrder, getToday, listMembers, listPurchaseOrders } from "@/lib/data";
+import { getPurchaseOrder, getToday, listMembers } from "@/lib/data";
+import { purchaseOrders as demoOrders } from "@/lib/demo/data";
 import { deadlineState } from "@/lib/domain/deadlines";
 import { MILESTONE_LABEL, MILESTONE_ORDER } from "@/lib/domain/labels";
 import { formatBytes } from "@/lib/upload-rules";
@@ -16,9 +17,12 @@ import { formatDate, formatDateTime, formatNumber } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Purchase Order" };
 
-/** Prerender known orders (demo data). New orders still render on demand. */
-export async function generateStaticParams() {
-  return (await listPurchaseOrders()).map((po) => ({ id: po.id }));
+/**
+ * Prerenders the demo orders (needed for the static demo site). Real orders
+ * are read per request, after the session is known.
+ */
+export function generateStaticParams() {
+  return demoOrders.map((po) => ({ id: po.id }));
 }
 
 function Info({ label, value }: { label: string; value: React.ReactNode }) {
@@ -35,7 +39,7 @@ async function OrderDetail({ params }: { params: PageProps<"/orders/[id]">["para
   const [data, members] = await Promise.all([getPurchaseOrder(id), listMembers()]);
   if (!data) notFound();
   const { po, buyer, merchandiser, milestones, documents, activity, quantity } = data;
-  const today = getToday();
+  const today = await getToday();
   const memberName = (uid: string | null) => members.find((m) => m.id === uid)?.fullName ?? "Unassigned";
   const ordered = [...milestones].sort((a, b) => MILESTONE_ORDER.indexOf(a.key) - MILESTONE_ORDER.indexOf(b.key));
   const done = milestones.filter((m) => m.status === "completed").length;

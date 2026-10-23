@@ -2,7 +2,7 @@
 
 AI-assisted merchandising workspace for garment buying houses: purchase orders, buyer-document extraction with human review, T&A tracking, deadline alerts, email drafting and management reports.
 
-> **Current status: Phase 1 — frontend foundation.** All 12 MVP screens run on a clearly labelled **fictional demo dataset**. There is no login, database, file storage or AI connection yet; buttons that need them are disabled and say which phase enables them. Do not enter real customer data.
+> **Current status: Phase 2 code complete.** Without Supabase keys the app runs as a demo on a clearly labelled **fictional dataset**. With keys (see [`docs/GO_LIVE.md`](docs/GO_LIVE.md)) it has real sign-up/sign-in, private company workspaces protected by Row Level Security, and saved data. Document AI, editing and alerts storage arrive in Phases 3–7.
 
 ## Quick start
 
@@ -20,7 +20,7 @@ npm run dev                  # http://localhost:3000
 | `npm run build` / `npm start` | Production build / serve it |
 | `npm run lint` | ESLint |
 | `npm run typecheck` | TypeScript check |
-| `npm test` | Unit tests (Vitest) — deadline rules, reports, CSV safety, validation |
+| `npm test` | Unit tests (Vitest) — deadline rules, reports, CSV safety, validation, and database security (RLS) tests against the real migrations |
 
 ## Live demo (GitHub Pages)
 
@@ -46,6 +46,7 @@ One-time setup: repository **Settings → Pages → Source: GitHub Actions**. Fr
 | 21 | Platform admin dashboard | `/admin` |
 
 ## Documentation
+- [`docs/GO_LIVE.md`](docs/GO_LIVE.md) — connect Supabase + Vercel for real accounts and data
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — system architecture, folder structure, database & security model
 - [`docs/MVP_PLAN.md`](docs/MVP_PLAN.md) — per-screen plan, dependency-ordered checklist, budget
 - [`docs/DESIGN_AUDIT.md`](docs/DESIGN_AUDIT.md) — what was taken from Figma and what was corrected

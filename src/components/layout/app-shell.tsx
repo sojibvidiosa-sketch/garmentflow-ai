@@ -15,6 +15,7 @@ import {
   LayoutDashboard,
   ListChecks,
   Mail,
+  LogOut,
   Menu,
   Search,
   Settings,
@@ -27,6 +28,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { Logo } from "./logo";
+import { signOut } from "@/lib/auth/actions";
 import { cn, initials } from "@/lib/utils";
 
 interface NavItem {
@@ -143,6 +145,7 @@ export function AppShell({
   userName,
   userRole,
   alertCount,
+  canSignOut,
   children,
 }: {
   area: "workspace" | "admin";
@@ -150,6 +153,8 @@ export function AppShell({
   userName: string;
   userRole: string;
   alertCount?: number;
+  /** Live mode only — the demo has no session to end. */
+  canSignOut?: boolean;
   children: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
@@ -205,6 +210,13 @@ export function AppShell({
               <p className="text-[11px] text-secondary">{userRole}</p>
             </div>
           </div>
+          {canSignOut && (
+            <form action={signOut}>
+              <button type="submit" className="rounded-control p-2 text-secondary hover:bg-subtle hover:text-ink" aria-label="Sign out" title="Sign out">
+                <LogOut className="size-4" />
+              </button>
+            </form>
+          )}
         </div>
       </header>
 
