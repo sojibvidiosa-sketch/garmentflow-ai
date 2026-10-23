@@ -1,18 +1,31 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { Download, Printer, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
-import { EmptyState } from "@/components/ui/states";
+import { EmptyState, Notice } from "@/components/ui/states";
+import { generateReportSummary } from "@/lib/actions/ai";
 import { Table, Td, Th, Tr } from "@/components/ui/table";
 import { downloadCsv, toCsv } from "@/lib/csv";
 import type { Report, ReportKey } from "@/lib/reports";
 import { cn, formatDate, formatNumber } from "@/lib/utils";
 
-export function ReportsView({ reports, today }: { reports: Report[]; today: string }) {
+export function ReportsView({ reports, today, aiAvailable, aiNote }: { reports: Report[]; today: string; aiAvailable: boolean; aiNote: string }) {
   const [key, setKey] = useState<ReportKey>("po_summary");
   const report = reports.find((r) => r.key === key)!;
+  const [summaries, setSummaries] = useState<Partial<Record<ReportKey, string>>>({});
+  const [summaryError, setSummaryError] = useState<string | null>(null);
+  const [writing, startWriting] = useTransition();
+
+  function writeSummary() {
+    setSummaryError(null);
+    startWriting(async () => {
+      const res = await generateReportSummary(key);
+      if (!res.ok) return setSummaryError(res.error);
+      setSummaries((s) => ({ ...s, [key]: res.data }));
+    });
+  }
 
   const show = (v: string | number, col: number) =>
     report.dateColumns.includes(col) ? formatDate(String(v)) : typeof v === "number" ? formatNumber(v) : v;
@@ -86,11 +99,23 @@ export function ReportsView({ reports, today }: { reports: Report[]; today: stri
         </CardBody>
       </Card>
 
-      <Card className="no-print mt-5">
-        <CardBody className="flex flex-wrap items-center gap-3 text-[13px] text-secondary">
-          <Sparkles className="size-4 text-violet" />
-          <span className="flex-1">AI narrative summaries (written from these exact figures) are added in Phase 7.</span>
-          <Button variant="secondary" size="sm" disabled>Write summary</Button>
+      <Card className="mt-5">
+        <CardHeader
+          title="Summary for management"
+          description={summaries[key] ? "AI-written from the figures above. Check it before sharing." : aiNote}
+          action={
+            <Button variant="secondary" size="sm" className="no-print" icon={<Sparkles className="size-4" />} loading={writing} disabled={!aiAvailable || report.rows.length === 0} onClick={writeSummary}>
+              {summaries[key] ? "Rewrite summary" : "Write summary"}
+            </Button>
+          }
+        />
+        <CardBody>
+          {summaries[key] ? (
+            <div className="text-[14px] leading-relaxed whitespace-pre-wrap text-ink">{summaries[key]}</div>
+          ) : (
+            <p className="text-[13px] text-secondary">All figures on this page are calculated from your records. The optional summary only describes them; it never changes a number.</p>
+          )}
+          {summaryError && <Notice tone="error" className="mt-3">{summaryError}</Notice>}
         </CardBody>
       </Card>
     </>

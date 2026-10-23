@@ -146,6 +146,13 @@ export async function listAlertReads(): Promise<string[]> {
   return [];
 }
 
+export type { EmailDraftRow } from "./supabase";
+
+export async function listEmailDrafts(): Promise<import("./supabase").EmailDraftRow[]> {
+  if (isSupabaseConfigured) return (await live()).listEmailDrafts();
+  return [];
+}
+
 /** Cross-company aggregates for platform admins (live version: Phase 8). */
 export async function getPlatformOverview() {
   if (isSupabaseConfigured) return { companies: [], jobs: [], available: false };

@@ -315,3 +315,26 @@ export async function listAlertReads(): Promise<string[]> {
   const { data } = await ctx.supabase.from("alert_reads").select("alert_id").eq("user_id", ctx.userId).eq("company_id", ctx.companyId).limit(5000);
   return (data ?? []).map((r) => r.alert_id);
 }
+
+export interface EmailDraftRow {
+  id: string;
+  poId: string | null;
+  purpose: string;
+  recipient: string;
+  tone: string;
+  subject: string;
+  body: string;
+  aiJobId: string | null;
+  updatedAt: string;
+}
+
+export async function listEmailDrafts(): Promise<EmailDraftRow[]> {
+  const ctx = await getContext();
+  const { data } = await ctx.supabase
+    .from("email_drafts")
+    .select("id, po_id, purpose, recipient_type, tone, subject, body, ai_job_id, updated_at")
+    .eq("company_id", ctx.companyId)
+    .order("updated_at", { ascending: false })
+    .limit(50);
+  return (data ?? []).map((d) => ({ id: d.id, poId: d.po_id, purpose: d.purpose, recipient: d.recipient_type, tone: d.tone, subject: d.subject, body: d.body, aiJobId: d.ai_job_id, updatedAt: d.updated_at }));
+}
