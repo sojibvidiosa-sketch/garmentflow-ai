@@ -1,36 +1,48 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# GarmentFlow AI
 
-## Getting Started
+AI-assisted merchandising workspace for garment buying houses: purchase orders, buyer-document extraction with human review, T&A tracking, deadline alerts, email drafting and management reports.
 
-First, run the development server:
+> **Current status: Phase 1 — frontend foundation.** All 12 MVP screens run on a clearly labelled **fictional demo dataset**. There is no login, database, file storage or AI connection yet; buttons that need them are disabled and say which phase enables them. Do not enter real customer data.
+
+## Quick start
+
+Requirements: Node.js 20.9+ (22 LTS recommended), npm.
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+cp .env.example .env.local   # optional in Phase 1
+npm run dev                  # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+| Command | What it does |
+|---|---|
+| `npm run dev` | Development server with hot reload |
+| `npm run build` / `npm start` | Production build / serve it |
+| `npm run lint` | ESLint |
+| `npm run typecheck` | TypeScript check |
+| `npm test` | Unit tests (Vitest) — deadline rules, reports, CSV safety, validation |
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Screens (Figma numbering)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| # | Screen | Route |
+|---|---|---|
+| 01 | Landing page | `/` |
+| 05 | Login (+ password recovery) | `/login`, `/forgot-password` |
+| 07 | Main dashboard | `/dashboard` |
+| 08 | Purchase orders | `/orders` |
+| 09 | New order / document upload | `/orders/new` |
+| 10 | AI extraction & review (sample) | `/orders/review/sample` |
+| 11 | Purchase order details | `/orders/po-1061` |
+| 13 | T&A tracker | `/tna` |
+| 15 | Delay alerts | `/alerts` |
+| 17 | AI email composer | `/email` |
+| 18 | Reports & order summary | `/reports` |
+| 21 | Platform admin dashboard | `/admin` |
 
-## Learn More
+## Documentation
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — system architecture, folder structure, database & security model
+- [`docs/MVP_PLAN.md`](docs/MVP_PLAN.md) — per-screen plan, dependency-ordered checklist, budget
+- [`docs/DESIGN_AUDIT.md`](docs/DESIGN_AUDIT.md) — what was taken from Figma and what was corrected
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Tech stack
+Next.js 16 (App Router, Cache Components) · React 19 · TypeScript · Tailwind CSS 4 · Lucide icons · Zod · Vitest. Planned: Supabase (Postgres, Auth, Storage), OpenAI API, Vercel + Vercel Cron.

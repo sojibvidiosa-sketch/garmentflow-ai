@@ -1,26 +1,75 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/*
+ * GarmentFlow design tokens — taken from Figma page "01 · Design System"
+ * (frame "Foundations — Color & Typography"). Keep names identical to the
+ * Figma swatch names so design and code stay easy to cross-reference.
+ */
+@theme {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  --color-ink: #17181b;
+  --color-secondary: #555f69;
+  --color-muted: #849099;
+  --color-border: #e4e8e9;
+  --color-bg: #f5f6f6;
+  --color-surface: #ffffff;
+  --color-subtle: #f8f9fa;
+
+  --color-violet: #6755f6;
+  --color-violet-hover: #5644e6;
+  --color-violet-light: #f1eeff;
+  --color-green: #077f68;
+  --color-green-light: #e6f6ed;
+  --color-yellow: #a46c18;
+  --color-yellow-light: #fff4d9;
+  --color-red: #ad4446;
+  --color-red-light: #feeced;
+  --color-dark: #202120;
+  --color-dark-hover: #33352f;
+  --color-teal: #007d77;
+  --color-blue: #2f5fb3;
+  --color-blue-light: #eaf2ff;
+
+  --radius-card: 13px;
+  --radius-control: 9px;
+
+  --text-display: 44px;
+  --text-display--line-height: 1.1;
+  --text-page: 30px;
+  --text-page--line-height: 1.2;
+  --text-section: 18px;
+  --text-section--line-height: 1.3;
+  --text-body: 14px;
+  --text-body--line-height: 1.5;
+  --text-caption: 12px;
+  --text-caption--line-height: 1.4;
+
+  --shadow-card: 0 1px 2px rgb(23 24 27 / 0.04);
+  --shadow-pop: 0 12px 32px rgb(23 24 27 / 0.12);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  color-scheme: light;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-feature-settings: "cv11", "ss01";
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-violet);
+  outline-offset: 2px;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: #fff;
+  }
 }
