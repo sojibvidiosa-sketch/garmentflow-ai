@@ -2,13 +2,14 @@ import { Suspense, type ReactNode } from "react";
 import { AppShell } from "@/components/layout/app-shell";
 import { DemoBanner } from "@/components/layout/demo-banner";
 import { Skeleton } from "@/components/ui/states";
-import { DATA_SOURCE, getWorkspace, listAlerts } from "@/lib/data";
+import { DATA_SOURCE, getWorkspace, listAlertReads, listAlerts } from "@/lib/data";
 import { ROLE_LABEL } from "@/lib/domain/labels";
 
 /** Reads the session in live mode, so it streams in behind the Suspense boundary. */
 async function WorkspaceShell({ children }: { children: ReactNode }) {
-  const [{ companyName, user, today }, alerts] = await Promise.all([getWorkspace(), listAlerts()]);
-  const urgent = alerts.filter((a) => a.severity !== "info").length;
+  const [{ companyName, user, today }, alerts, reads] = await Promise.all([getWorkspace(), listAlerts(), listAlertReads()]);
+  const read = new Set(reads);
+  const urgent = alerts.filter((a) => a.severity !== "info" && !read.has(a.id)).length;
 
   return (
     <AppShell

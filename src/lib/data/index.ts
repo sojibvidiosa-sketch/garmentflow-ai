@@ -7,7 +7,7 @@
  */
 import * as demo from "@/lib/demo/data";
 import { computeAlerts, totalQuantity } from "@/lib/domain/deadlines";
-import type { ActivityEntry, Buyer, Member, Milestone, PurchaseOrder } from "@/lib/domain/types";
+import type { ActivityEntry, Buyer, Member, Milestone, PurchaseOrder, Task } from "@/lib/domain/types";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import type { ReviewExtraction } from "@/lib/ai/extraction";
 
@@ -133,6 +133,17 @@ export async function listDocuments(): Promise<import("./supabase").DocumentRow[
     extraction: d.kind === "purchase_order" ? { jobId: "sample", status: "approved" as const } : null,
     lastJobFailed: null,
   }));
+}
+
+export async function listTasks(): Promise<Task[]> {
+  if (isSupabaseConfigured) return (await live()).listTasks();
+  return demo.tasks;
+}
+
+/** Alert ids the current user has marked as read (demo: none). */
+export async function listAlertReads(): Promise<string[]> {
+  if (isSupabaseConfigured) return (await live()).listAlertReads();
+  return [];
 }
 
 /** Cross-company aggregates for platform admins (live version: Phase 8). */

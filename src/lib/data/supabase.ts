@@ -6,7 +6,7 @@ import { ACTIVE_COMPANY_COOKIE } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
 import { computeAlerts, totalQuantity } from "@/lib/domain/deadlines";
 import { MILESTONE_LABEL, PO_STATUS } from "@/lib/domain/labels";
-import type { ActivityEntry, Buyer, ColorBreakdown, Member, Milestone, PoDocument, PurchaseOrder, Role } from "@/lib/domain/types";
+import type { ActivityEntry, Buyer, ColorBreakdown, Member, Milestone, PoDocument, PurchaseOrder, Role, Task } from "@/lib/domain/types";
 import type { PoRow } from "./index";
 
 /** Calendar day in Bangladesh — deadline rules are evaluated per local day. */
@@ -302,4 +302,16 @@ export async function listDocuments(): Promise<DocumentRow[]> {
       lastJobFailed: job?.status === "failed" ? "AI could not read this file last time." : null,
     };
   });
+}
+
+export async function listTasks(): Promise<Task[]> {
+  const ctx = await getContext();
+  const { data } = await ctx.supabase.from("tasks").select("id, po_id, title, assignee_id, due_date, done_at, created_at").eq("company_id", ctx.companyId).order("created_at", { ascending: false }).limit(500);
+  return (data ?? []).map((t) => ({ id: t.id, poId: t.po_id, title: t.title, assigneeId: t.assignee_id, dueDate: t.due_date, doneAt: t.done_at, createdAt: t.created_at }));
+}
+
+export async function listAlertReads(): Promise<string[]> {
+  const ctx = await getContext();
+  const { data } = await ctx.supabase.from("alert_reads").select("alert_id").eq("user_id", ctx.userId).eq("company_id", ctx.companyId).limit(5000);
+  return (data ?? []).map((r) => r.alert_id);
 }

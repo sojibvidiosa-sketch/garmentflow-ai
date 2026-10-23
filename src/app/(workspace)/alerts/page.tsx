@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/ui/page-header";
 import { AlertList, type AlertView } from "@/components/alerts/alert-list";
-import { getReportData, listAlerts } from "@/lib/data";
+import { DATA_SOURCE, getReportData, listAlertReads, listAlerts } from "@/lib/data";
 import { MILESTONE_LABEL } from "@/lib/domain/labels";
 import { formatDate } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Delay Alerts" };
 
 export default async function AlertsPage() {
-  const [{ orders, milestones, members, buyers }, alerts] = await Promise.all([getReportData(), listAlerts()]);
+  const [{ orders, milestones, members, buyers }, alerts, reads] = await Promise.all([getReportData(), listAlerts(), listAlertReads()]);
   const po = new Map(orders.map((o) => [o.id, o]));
   const ms = new Map(milestones.map((m) => [m.id, m]));
   const member = new Map(members.map((m) => [m.id, m.fullName]));
@@ -42,7 +42,7 @@ export default async function AlertsPage() {
   return (
     <>
       <PageHeader title="Delay Alerts" description="Rule-based checks on every open milestone. An overdue task needs follow-up — it does not automatically mean the shipment will be late." />
-      <AlertList alerts={views} />
+      <AlertList alerts={views} initialRead={reads} live={DATA_SOURCE === "live"} />
     </>
   );
 }

@@ -125,3 +125,13 @@ export interface AiJob {
   costUsd: number;
   createdAt: string;
 }
+
+export interface Task {
+  id: string;
+  poId: string | null;
+  title: string;
+  assigneeId: string | null;
+  dueDate: string | null;
+  doneAt: string | null;
+  createdAt: string;
+}

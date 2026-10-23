@@ -2,15 +2,14 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { Check, CircleAlert, Lock } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Check, CircleAlert } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Select } from "@/components/ui/form";
-import { Modal } from "@/components/ui/modal";
 import { EmptyState } from "@/components/ui/states";
-import { DEADLINE, DeadlineBadge, MilestoneStatusBadge } from "@/components/domain/status-badges";
+import { DEADLINE } from "@/components/domain/status-badges";
+import { MilestoneEditor } from "./milestone-editor";
 import type { DeadlineState } from "@/lib/domain/deadlines";
-import { MILESTONE_LABEL, MILESTONE_ORDER, MILESTONE_SHORT, PRIORITY } from "@/lib/domain/labels";
+import { MILESTONE_LABEL, MILESTONE_ORDER, MILESTONE_SHORT } from "@/lib/domain/labels";
 import type { Milestone } from "@/lib/domain/types";
 import { cn, formatDate } from "@/lib/utils";
 
@@ -34,7 +33,7 @@ const cellStyle: Record<DeadlineState, string> = {
 
 type Show = "all" | "attention" | "overdue";
 
-export function TnaMatrix({ rows, buyers, members }: { rows: TnaRow[]; buyers: string[]; members: { id: string; name: string }[] }) {
+export function TnaMatrix({ rows, buyers, members, canEdit }: { rows: TnaRow[]; buyers: string[]; members: { id: string; name: string }[]; canEdit: boolean }) {
   const [buyer, setBuyer] = useState("");
   const [show, setShow] = useState<Show>("all");
   const [selected, setSelected] = useState<{ row: TnaRow; m: StatefulMilestone } | null>(null);
@@ -122,30 +121,13 @@ export function TnaMatrix({ rows, buyers, members }: { rows: TnaRow[]; buyers: s
         )}
       </Card>
 
-      <Modal
-        open={!!selected}
+      <MilestoneEditor
+        milestone={selected?.m ?? null}
+        poNumber={selected?.row.poNumber ?? ""}
+        members={members}
+        canEdit={canEdit}
         onClose={() => setSelected(null)}
-        title={selected ? `${selected.row.poNumber} · ${MILESTONE_LABEL[selected.m.key]}` : ""}
-        footer={
-          <>
-            <Button variant="secondary" disabled icon={<Lock className="size-3.5" />} title="Editing is enabled in Phase 5">Edit</Button>
-            <Button disabled icon={<Check className="size-4" />} title="Editing is enabled in Phase 5">Mark complete</Button>
-          </>
-        }
-      >
-        {selected && (
-          <dl className="grid grid-cols-2 gap-4 text-[13px]">
-            <div><dt className="text-caption">Status</dt><dd className="mt-1"><MilestoneStatusBadge status={selected.m.status} /></dd></div>
-            <div><dt className="text-caption">Deadline</dt><dd className="mt-1"><DeadlineBadge state={selected.m.state} /></dd></div>
-            <div><dt className="text-caption">Planned date</dt><dd className="mt-1 font-medium text-ink">{formatDate(selected.m.plannedDate)}</dd></div>
-            <div><dt className="text-caption">Actual date</dt><dd className="mt-1 font-medium text-ink">{formatDate(selected.m.actualDate)}</dd></div>
-            <div><dt className="text-caption">Assigned to</dt><dd className="mt-1 font-medium text-ink">{members.find((x) => x.id === selected.m.assigneeId)?.name ?? "Unassigned"}</dd></div>
-            <div><dt className="text-caption">Priority</dt><dd className="mt-1 font-medium text-ink">{PRIORITY[selected.m.priority].label}</dd></div>
-            <div className="col-span-2"><dt className="text-caption">Notes</dt><dd className="mt-1 text-ink">{selected.m.notes || "—"}</dd></div>
-            <p className="col-span-2 rounded-control bg-subtle p-2.5 text-caption">Updating milestones (with activity history) is enabled in Phase 5.</p>
-          </dl>
-        )}
-      </Modal>
+      />
     </>
   );
 }

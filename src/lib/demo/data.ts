@@ -14,6 +14,7 @@ import type {
   Member,
   Milestone,
   MilestoneKey,
+  Task,
   PoDocument,
   PoStatus,
   PurchaseOrder,
@@ -269,4 +270,11 @@ export const aiJobs: AiJob[] = [
   { id: "j-899", companyId: "c-meghna", kind: "email_draft", status: "succeeded", error: null, tokens: 1430, costUsd: 0.004, createdAt: "2026-10-22T06:02:00Z" },
   { id: "j-898", companyId: "c-padma", kind: "extraction", status: "failed", error: "File exceeded 10 MB limit", tokens: 0, costUsd: 0, createdAt: "2026-10-21T12:40:00Z" },
   { id: "j-897", companyId: "c-demo", kind: "report_summary", status: "succeeded", error: null, tokens: 2210, costUsd: 0.007, createdAt: "2026-10-21T09:15:00Z" },
+];
+
+export const tasks: Task[] = [
+  { id: "t1", poId: "po-1061", title: "Chase trims supplier for revised button samples", assigneeId: "u-sarah", dueDate: "2026-10-24", doneAt: null, createdAt: "2026-10-21T09:00:00Z" },
+  { id: "t2", poId: "po-1067", title: "Send mill the updated dyeing ETA to the buyer", assigneeId: "u-sarah", dueDate: "2026-10-22", doneAt: null, createdAt: "2026-10-20T09:00:00Z" },
+  { id: "t3", poId: null, title: "Prepare weekly order status for management", assigneeId: "u-sarah", dueDate: "2026-10-27", doneAt: null, createdAt: "2026-10-22T09:00:00Z" },
+  { id: "t4", poId: "po-1059", title: "Book inspection slot with QA team", assigneeId: "u-sarah", dueDate: "2026-10-18", doneAt: "2026-10-17T12:00:00Z", createdAt: "2026-10-15T09:00:00Z" },
 ];

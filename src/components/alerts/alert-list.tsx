@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { BellOff, CheckCheck, Clock, FileWarning, OctagonAlert, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { EmptyState } from "@/components/ui/states";
+import { EmptyState, Notice } from "@/components/ui/states";
 import { SeverityBadge } from "@/components/domain/status-badges";
+import { setAlertsRead } from "@/lib/actions/work";
 import type { Alert, AlertSeverity } from "@/lib/domain/deadlines";
 import { cn, initials } from "@/lib/utils";
 
@@ -36,10 +37,28 @@ const TABS: { key: "all" | AlertSeverity; label: string }[] = [
   { key: "info", label: "Upcoming" },
 ];
 
-export function AlertList({ alerts }: { alerts: AlertView[] }) {
+export function AlertList({ alerts, initialRead, live }: { alerts: AlertView[]; initialRead: string[]; live: boolean }) {
   const [tab, setTab] = useState<(typeof TABS)[number]["key"]>("all");
-  // Phase 1: read state lives in memory only. Phase 6 stores it per user in `notifications`.
-  const [read, setRead] = useState<Set<string>>(new Set());
+  // Live mode saves read state per user; demo mode keeps it in memory only.
+  const [read, setReadState] = useState<Set<string>>(() => new Set(initialRead));
+  const [error, setError] = useState<string | null>(null);
+  const [, start] = useTransition();
+
+  function setRead(next: Set<string>) {
+    const previous = read;
+    setReadState(next);
+    if (!live) return;
+    const added = [...next].filter((id) => !previous.has(id));
+    const removed = [...previous].filter((id) => !next.has(id));
+    start(async () => {
+      const results = await Promise.all([added.length ? setAlertsRead(added, true) : null, removed.length ? setAlertsRead(removed, false) : null]);
+      const failed = results.find((r) => r && !r.ok);
+      if (failed && !failed.ok) {
+        setReadState(previous);
+        setError(failed.error);
+      }
+    });
+  }
   const [hideRead, setHideRead] = useState(false);
 
   const visible = useMemo(
@@ -73,6 +92,7 @@ export function AlertList({ alerts }: { alerts: AlertView[] }) {
         </Button>
       </div>
 
+      {error && <Notice tone="error" className="mb-4">{error}</Notice>}
       <Card>
         {visible.length === 0 ? (
           <EmptyState icon={<BellOff className="size-5" />} title="No alerts here" description="Nothing in this view needs attention right now." />
@@ -109,7 +129,12 @@ export function AlertList({ alerts }: { alerts: AlertView[] }) {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => setRead((s) => { const n = new Set(s); if (n.has(a.id)) n.delete(a.id); else n.add(a.id); return n; })}
+                      onClick={() => {
+                        const n = new Set(read);
+                        if (n.has(a.id)) n.delete(a.id);
+                        else n.add(a.id);
+                        setRead(n);
+                      }}
                     >
                       {isRead ? "Mark unread" : "Mark read"}
                     </Button>
@@ -121,7 +146,7 @@ export function AlertList({ alerts }: { alerts: AlertView[] }) {
         )}
       </Card>
       <p className="mt-3 text-caption text-secondary">
-        Rules: overdue = planned date passed and not completed (critical after 3 days or for shipment) · upcoming = due within 7 days · AI review pending for 2+ days. Read status resets on reload in demo mode.
+        Rules: overdue = planned date passed and not completed (critical after 3 days or for shipment) · upcoming = due within 7 days · AI review pending for 2+ days.{live ? " Read status is saved for your account." : " Read status resets on reload in demo mode."}
       </p>
     </>
   );

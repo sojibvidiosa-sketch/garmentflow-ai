@@ -5,14 +5,15 @@ import { Suspense } from "react";
 import { ArrowLeft, FileText, Mail, Pencil } from "lucide-react";
 import { ButtonLink } from "@/components/ui/button";
 import { CreatePlanButton, DeleteOrderButton, StatusControl } from "@/components/orders/order-actions";
+import { OrderTimeline } from "@/components/orders/order-timeline";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { EmptyState, Skeleton } from "@/components/ui/states";
-import { DeadlineBadge, MilestoneStatusBadge, PoStatusBadge } from "@/components/domain/status-badges";
-import { getPurchaseOrder, getToday, listMembers } from "@/lib/data";
+import { PoStatusBadge } from "@/components/domain/status-badges";
+import { getPurchaseOrder, getToday, getWorkspace, listMembers } from "@/lib/data";
 import { purchaseOrders as demoOrders } from "@/lib/demo/data";
 import { deadlineState } from "@/lib/domain/deadlines";
-import { MILESTONE_LABEL, MILESTONE_ORDER } from "@/lib/domain/labels";
+import { MILESTONE_ORDER } from "@/lib/domain/labels";
 import { formatBytes } from "@/lib/upload-rules";
 import { formatDate, formatDateTime, formatNumber } from "@/lib/utils";
 
@@ -37,7 +38,7 @@ function Info({ label, value }: { label: string; value: React.ReactNode }) {
 
 async function OrderDetail({ params }: { params: PageProps<"/orders/[id]">["params"] }) {
   const { id } = await params;
-  const [data, members] = await Promise.all([getPurchaseOrder(id), listMembers()]);
+  const [data, members, { user }] = await Promise.all([getPurchaseOrder(id), listMembers(), getWorkspace()]);
   if (!data) notFound();
   const { po, buyer, merchandiser, milestones, documents, activity, quantity } = data;
   const today = await getToday();
@@ -132,30 +133,12 @@ async function OrderDetail({ params }: { params: PageProps<"/orders/[id]">["para
                   action={po.shipDate ? <CreatePlanButton poId={po.id} /> : <p className="text-caption text-red">Add a ship date first (Edit order).</p>}
                 />
               ) : (
-                <ol className="relative space-y-1 before:absolute before:top-3 before:bottom-3 before:left-[11px] before:w-px before:bg-border">
-                  {ordered.map((m) => {
-                    const state = deadlineState(m, today);
-                    return (
-                      <li key={m.id} className="relative grid grid-cols-[24px_1fr] gap-3 py-2">
-                        <span className={`z-10 mt-1 size-[9px] justify-self-center rounded-full ring-4 ring-surface ${state === "done" ? "bg-green" : state === "overdue" || state === "blocked" ? "bg-red" : state === "due_soon" ? "bg-yellow" : "bg-border"}`} />
-                        <div className="flex flex-wrap items-center justify-between gap-2">
-                          <div>
-                            <p className="text-[13px] font-semibold">{MILESTONE_LABEL[m.key]}</p>
-                            <p className="text-caption text-secondary">
-                              Planned {formatDate(m.plannedDate)}
-                              {m.actualDate && ` · Done ${formatDate(m.actualDate)}`} · {memberName(m.assigneeId)}
-                            </p>
-                            {m.notes && <p className="mt-1 text-caption text-red">{m.notes}</p>}
-                          </div>
-                          <div className="flex gap-2">
-                            <MilestoneStatusBadge status={m.status} />
-                            {state !== "done" && state !== "upcoming" && <DeadlineBadge state={state} />}
-                          </div>
-                        </div>
-                      </li>
-                    );
-                  })}
-                </ol>
+                <OrderTimeline
+                  milestones={ordered.map((m) => ({ ...m, state: deadlineState(m, today) }))}
+                  poNumber={po.poNumber}
+                  members={members.map((m) => ({ id: m.id, name: m.fullName }))}
+                  canEdit={user.role !== "viewer"}
+                />
               )}
             </CardBody>
           </Card>
