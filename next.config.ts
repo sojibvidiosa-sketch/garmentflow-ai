@@ -15,6 +15,25 @@ const nextConfig: NextConfig = {
   env: { NEXT_PUBLIC_BASE_PATH: basePath },
   cacheComponents: !staticDemo,
   partialPrefetching: !staticDemo,
+  // Security headers for the server deployment (static hosting cannot set headers).
+  ...(!staticDemo && {
+    poweredByHeader: false,
+    async headers() {
+      return [
+        {
+          source: "/:path*",
+          headers: [
+            { key: "X-Frame-Options", value: "DENY" },
+            { key: "Content-Security-Policy", value: "frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'" },
+            { key: "X-Content-Type-Options", value: "nosniff" },
+            { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+            { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=()" },
+            { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
+          ],
+        },
+      ];
+    },
+  }),
   turbopack: {
     // The static demo has no server: each server-action module "x.ts" is
     // replaced by its demo stand-in "x.static.ts" when one exists.

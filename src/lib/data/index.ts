@@ -10,6 +10,9 @@ import { computeAlerts, totalQuantity } from "@/lib/domain/deadlines";
 import type { ActivityEntry, Buyer, Member, Milestone, PurchaseOrder, Task } from "@/lib/domain/types";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import type { ReviewExtraction } from "@/lib/ai/extraction";
+import type { AdminData } from "./admin-types";
+
+export type { AdminCompany, AdminData, AdminJob, Lead } from "./admin-types";
 
 export const DATA_SOURCE: "demo" | "live" = isSupabaseConfigured ? "live" : "demo";
 
@@ -182,11 +185,35 @@ export async function getCompanySettings(): Promise<import("./supabase").Company
   };
 }
 
-/** Cross-company aggregates for platform admins (live version: Phase 8). */
-export async function getPlatformOverview() {
-  if (isSupabaseConfigured) return { companies: [], jobs: [], available: false };
-  return { companies: demo.companies, jobs: demo.aiJobs, available: true };
+/** Cross-company aggregates for platform admins (metadata only). */
+export async function getAdminData(): Promise<AdminData> {
+  if (isSupabaseConfigured) return (await live()).getAdminData();
+  const name = new Map(demo.companies.map((c) => [c.id, c.name]));
+  const limits = { pilot: [10, 150, 300], starter: [3, 30, 100], business: [10, 150, 300] } as const;
+  return {
+    companies: demo.companies.map((c) => ({
+      id: c.id, name: c.name, createdAt: `${c.createdAt}T08:00:00Z`, plan: c.plan, status: c.subscription,
+      seatLimit: limits[c.plan][0], poLimit: limits[c.plan][1], aiJobLimit: limits[c.plan][2],
+      members: c.activeUsers, activePos: c.activePos, aiJobs30d: c.aiJobs30d, aiCost30d: c.aiCost30dUsd,
+      failedJobs30d: demo.aiJobs.filter((j) => j.companyId === c.id && j.status === "failed").length,
+      lastActivity: "2026-10-23T05:40:00Z",
+    })),
+    jobs: demo.aiJobs.map((j) => ({
+      id: j.id, companyName: name.get(j.companyId) ?? "", kind: j.kind, status: j.status, model: "gpt-4.1-mini", error: j.error,
+      inputTokens: Math.round(j.tokens * 0.85), outputTokens: Math.round(j.tokens * 0.15), costUsd: j.costUsd, createdAt: j.createdAt,
+    })),
+    activity: [
+      { companyName: "Padma Trade Links", action: "update", targetType: "milestones", createdAt: "2026-10-23T06:12:00Z" },
+      { companyName: demo.DEMO_COMPANY_NAME, action: "insert", targetType: "purchase_orders", createdAt: "2026-10-22T08:35:00Z" },
+      { companyName: "Meghna Buying House", action: "create", targetType: "companies", createdAt: "2026-09-14T04:00:00Z" },
+      { companyName: "Karnaphuli Sourcing", action: "update", targetType: "subscriptions", createdAt: "2026-09-02T10:00:00Z" },
+    ],
+    leads: [
+      { id: "l1", fullName: "Rina Das", email: "rina@example-buying.test", company: "Example Buying Co.", phone: "+880 1700-000000", teamSize: "3–10 users", message: "We manage 40 active POs for EU buyers.", createdAt: "2026-10-22T09:10:00Z" },
+    ],
+  };
 }
+
 
 /** Raw tables, used by reports which aggregate across them. */
 export async function getReportData() {

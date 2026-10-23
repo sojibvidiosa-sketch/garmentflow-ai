@@ -1,107 +1,57 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { ShieldCheck } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { MetricCard } from "@/components/ui/metric-card";
 import { PageHeader } from "@/components/ui/page-header";
-import { getPlatformOverview } from "@/lib/data";
-import type { Tone } from "@/lib/domain/labels";
-import type { Company } from "@/lib/domain/types";
-import { formatDate, formatDateTime, formatNumber, formatUsd } from "@/lib/utils";
+import { CompaniesTable, JobsTable } from "@/components/admin/admin-tables";
+import { getAdminData } from "@/lib/data";
+import { formatNumber, formatUsd } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Platform Admin" };
 
-const SUB: Record<Company["subscription"], { label: string; tone: Tone }> = {
-  trialing: { label: "Trial", tone: "blue" },
-  active: { label: "Active", tone: "green" },
-  past_due: { label: "Past due", tone: "red" },
-  cancelled: { label: "Cancelled", tone: "neutral" },
-};
-
-const JOB_KIND = { extraction: "Document extraction", email_draft: "Email draft", report_summary: "Report summary" } as const;
-
 export default async function AdminPage() {
-  const { companies, jobs, available } = await getPlatformOverview();
-  if (!available) {
-    return (
-      <>
-        <PageHeader title="Platform Admin Dashboard" description="Operating overview across all customer companies." />
-        <div className="rounded-card border border-border bg-surface p-6 text-[13px] text-secondary">
-          Cross-company usage, billing and AI-cost aggregates are connected in Phase 8. Customer orders and documents are never shown here.
-        </div>
-      </>
-    );
-  }
-  const companyName = new Map(companies.map((c) => [c.id, c.name]));
-  const users = companies.reduce((s, c) => s + c.activeUsers, 0);
+  const { companies, jobs, leads } = await getAdminData();
+  const users = companies.reduce((s, c) => s + c.members, 0);
   const aiJobs = companies.reduce((s, c) => s + c.aiJobs30d, 0);
-  const aiCost = companies.reduce((s, c) => s + c.aiCost30dUsd, 0);
+  const aiCost = companies.reduce((s, c) => s + c.aiCost30d, 0);
   const failed = jobs.filter((j) => j.status === "failed");
 
   return (
     <>
       <PageHeader title="Platform Admin Dashboard" description="Operating overview across all customer companies (last 30 days)." />
-
       <div className="mb-6 flex gap-2 rounded-control border border-border bg-surface p-3 text-caption text-secondary">
         <ShieldCheck className="size-4 shrink-0 text-green" />
-        Platform admins see usage and billing metadata only. Customer orders and documents are not visible here without an audited, customer-approved support grant.
+        Platform admins see usage and billing metadata only. Customer orders and documents are never shown here.
       </div>
-
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <MetricCard label="Companies" value={companies.length} hint={`${companies.filter((c) => c.subscription === "trialing").length} on trial`} tone="blue" />
+        <MetricCard label="Companies" value={companies.length} hint={`${companies.filter((c) => c.status === "trialing").length} on trial`} tone="blue" href="/admin/companies" />
         <MetricCard label="Active users" value={users} hint="All companies" tone="violet" />
-        <MetricCard label="AI jobs (30 days)" value={formatNumber(aiJobs)} hint={`${formatUsd(aiCost)} est.`} tone="neutral" />
-        <MetricCard label="Failed jobs" value={failed.length} hint={failed.length ? "Investigate" : "Clear"} tone={failed.length ? "red" : "green"} />
+        <MetricCard label="AI jobs (30 days)" value={formatNumber(aiJobs)} hint={`${formatUsd(aiCost)} est.`} tone="neutral" href="/admin/ai-usage" />
+        <MetricCard label="Failed jobs" value={failed.length} hint={failed.length ? "Investigate" : "Clear"} tone={failed.length ? "red" : "green"} href="/admin/jobs" />
       </div>
-
-      <div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+      <div className="mt-6 space-y-6">
         <Card>
-          <CardHeader title="Companies" />
-          <CardBody className="overflow-x-auto p-2.5 pt-4">
-            <table className="w-full min-w-[640px] text-[13px]">
-              <thead>
-                <tr className="text-left text-[11px] font-semibold text-secondary uppercase">
-                  {["Company", "Plan", "Subscription", "Users", "Active POs", "AI cost (30d)", "Since"].map((h) => (
-                    <th key={h} className="bg-subtle px-3 py-2.5 first:rounded-l-md last:rounded-r-md">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {companies.map((c) => (
-                  <tr key={c.id} className="border-b border-border">
-                    <td className="px-3 py-3 font-semibold">{c.name}</td>
-                    <td className="px-3 py-3 capitalize">{c.plan}</td>
-                    <td className="px-3 py-3"><Badge tone={SUB[c.subscription].tone}>{SUB[c.subscription].label}</Badge></td>
-                    <td className="px-3 py-3 tabular-nums">{c.activeUsers}</td>
-                    <td className="px-3 py-3 tabular-nums">{c.activePos}</td>
-                    <td className="px-3 py-3 tabular-nums">{formatUsd(c.aiCost30dUsd)}</td>
-                    <td className="px-3 py-3 text-secondary">{formatDate(c.createdAt)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </CardBody>
+          <CardHeader title="Companies" action={<Link href="/admin/companies" className="text-caption font-semibold text-violet hover:underline">All companies</Link>} />
+          <CardBody className="p-2.5 pt-4"><CompaniesTable companies={companies.slice(0, 8)} /></CardBody>
         </Card>
-
-        <Card>
-          <CardHeader title="Recent AI jobs" description="Failures need follow-up with the customer." />
-          <CardBody>
-            <ul className="space-y-3">
-              {jobs.map((j) => (
-                <li key={j.id} className="rounded-control border border-border p-3 text-[13px]">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="font-semibold">{JOB_KIND[j.kind]}</span>
-                    <Badge tone={j.status === "failed" ? "red" : j.status === "succeeded" ? "green" : "blue"}>{j.status}</Badge>
-                  </div>
-                  <p className="mt-1 text-caption text-secondary">
-                    {companyName.get(j.companyId)} · {formatDateTime(j.createdAt)} · {formatNumber(j.tokens)} tokens · {formatUsd(j.costUsd)}
-                  </p>
-                  {j.error && <p className="mt-1.5 text-caption text-red">{j.error}</p>}
-                </li>
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+          <Card>
+            <CardHeader title="Recent AI jobs" action={<Link href="/admin/jobs" className="text-caption font-semibold text-violet hover:underline">All jobs</Link>} />
+            <CardBody className="p-2.5 pt-4"><JobsTable jobs={jobs.slice(0, 6)} /></CardBody>
+          </Card>
+          <Card>
+            <CardHeader title="New demo requests" action={<Link href="/admin/support" className="text-caption font-semibold text-violet hover:underline">Support</Link>} />
+            <CardBody className="space-y-3 pt-3">
+              {leads.length === 0 ? <p className="text-[13px] text-secondary">No demo requests yet.</p> : leads.slice(0, 5).map((l) => (
+                <div key={l.id} className="rounded-control border border-border p-3 text-[13px]">
+                  <p className="font-semibold">{l.company}</p>
+                  <p className="text-caption text-secondary">{l.fullName} · {l.email}</p>
+                </div>
               ))}
-            </ul>
-          </CardBody>
-        </Card>
+            </CardBody>
+          </Card>
+        </div>
       </div>
     </>
   );

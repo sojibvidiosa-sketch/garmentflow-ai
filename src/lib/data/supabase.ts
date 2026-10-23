@@ -408,3 +408,32 @@ export async function getCompanySettings(): Promise<CompanySettings> {
     activeCompanyId: ctx.companyId,
   };
 }
+
+/** Platform admin reporting. RPCs refuse anyone not in platform_admins. */
+export async function getAdminData(): Promise<import("./admin-types").AdminData> {
+  const supabase = await createClient();
+  const [companies, jobs, activity, leads] = await Promise.all([
+    supabase.rpc("admin_companies"),
+    supabase.rpc("admin_ai_jobs", { max_rows: 200 }),
+    supabase.rpc("admin_activity", { max_rows: 200 }),
+    supabase.from("leads").select("id, full_name, email, company, phone, team_size, message, created_at").order("created_at", { ascending: false }).limit(200),
+  ]);
+  if (companies.error) throw new Error("Platform admin access required.");
+  type C = { id: string; name: string; created_at: string; plan: string | null; status: string | null; seat_limit: number | null; po_limit: number | null; ai_job_limit: number | null; members: number; active_pos: number; ai_jobs_30d: number; ai_cost_30d: number | string; failed_jobs_30d: number; last_activity: string | null };
+  type J = { id: string; company_name: string; kind: "extraction" | "email_draft" | "report_summary"; status: "queued" | "processing" | "succeeded" | "failed"; model: string; error: string | null; input_tokens: number; output_tokens: number; cost_usd: number | string; created_at: string };
+  type A = { company_name: string | null; action: string; target_type: string; created_at: string };
+  return {
+    companies: ((companies.data ?? []) as C[]).map((c) => ({
+      id: c.id, name: c.name, createdAt: c.created_at, plan: c.plan ?? "pilot", status: c.status ?? "trialing",
+      seatLimit: c.seat_limit ?? 0, poLimit: c.po_limit ?? 0, aiJobLimit: c.ai_job_limit ?? 0,
+      members: Number(c.members), activePos: Number(c.active_pos), aiJobs30d: Number(c.ai_jobs_30d), aiCost30d: Number(c.ai_cost_30d),
+      failedJobs30d: Number(c.failed_jobs_30d), lastActivity: c.last_activity,
+    })),
+    jobs: ((jobs.data ?? []) as J[]).map((j) => ({
+      id: j.id, companyName: j.company_name, kind: j.kind, status: j.status, model: j.model, error: j.error,
+      inputTokens: j.input_tokens, outputTokens: j.output_tokens, costUsd: Number(j.cost_usd), createdAt: j.created_at,
+    })),
+    activity: ((activity.data ?? []) as A[]).map((a) => ({ companyName: a.company_name, action: a.action, targetType: a.target_type, createdAt: a.created_at })),
+    leads: (leads.data ?? []).map((l) => ({ id: l.id, fullName: l.full_name, email: l.email, company: l.company, phone: l.phone, teamSize: l.team_size, message: l.message, createdAt: l.created_at })),
+  };
+}

@@ -1,6 +1,6 @@
 import { ArrowRight, BellRing, Check, ClipboardList, FileSearch, ListChecks, Mail, PieChart } from "lucide-react";
 import { ButtonLink } from "@/components/ui/button";
-import { CONTACT_EMAIL } from "@/components/layout/site-header";
+import Link from "next/link";
 
 const steps = ["Import buyer brief", "Review extracted fields", "Create purchase order", "Track T&A", "Report & follow up"];
 
@@ -28,7 +28,7 @@ const previewRows = [
 ];
 
 export default function LandingPage() {
-  const demoHref = `mailto:${CONTACT_EMAIL}?subject=GarmentFlow%20AI%20demo%20request`;
+  const demoHref = "/contact";
   return (
     <main>
       {/* Screen 01 — hero */}
@@ -44,11 +44,14 @@ export default function LandingPage() {
             Turn buyer emails and tech packs into organized purchase orders. Track approvals, fabric and shipping with confidence.
           </p>
           <div className="mt-10 flex flex-wrap gap-3">
-            <a href={demoHref} className="inline-flex h-11 items-center gap-2 rounded-control bg-dark px-5 text-[13px] font-semibold text-white hover:bg-dark-hover">
+            <Link href={demoHref} className="inline-flex h-11 items-center gap-2 rounded-control bg-dark px-5 text-[13px] font-semibold text-white hover:bg-dark-hover">
               Book a live demo <ArrowRight className="size-4" />
-            </a>
-            <ButtonLink href="/dashboard" variant="primary" className="h-11 px-5">
-              Explore the demo workspace
+            </Link>
+            <ButtonLink href="/signup" variant="primary" className="h-11 px-5">
+              Start free pilot
+            </ButtonLink>
+            <ButtonLink href="/dashboard" variant="secondary" className="h-11 px-5">
+              Explore the demo
             </ButtonLink>
           </div>
           <p className="mt-4 text-caption text-secondary">The demo workspace uses fictional sample data.</p>
@@ -130,9 +133,9 @@ export default function LandingPage() {
                   </li>
                 ))}
               </ul>
-              <a href={demoHref} className={`mt-8 inline-flex h-10 items-center justify-center rounded-control text-[13px] font-semibold ${plan.featured ? "bg-violet text-white hover:bg-violet-hover" : "border border-border hover:bg-subtle"}`}>
+              <Link href={demoHref} className={`mt-8 inline-flex h-10 items-center justify-center rounded-control text-[13px] font-semibold ${plan.featured ? "bg-violet text-white hover:bg-violet-hover" : "border border-border hover:bg-subtle"}`}>
                 Request demo
-              </a>
+              </Link>
             </div>
           ))}
         </div>

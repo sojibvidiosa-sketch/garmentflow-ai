@@ -37,8 +37,6 @@ interface NavItem {
   icon: LucideIcon;
   /** Screen number in the Figma file. */
   screen: string;
-  /** Not part of the 12-screen MVP — shown disabled so navigation stays honest. */
-  later?: boolean;
 }
 
 const NAV: Record<"workspace" | "admin", NavItem[]> = {
@@ -46,28 +44,29 @@ const NAV: Record<"workspace" | "admin", NavItem[]> = {
     { label: "Overview", href: "/dashboard", icon: LayoutDashboard, screen: "07" },
     { label: "Purchase Orders", href: "/orders", icon: ClipboardList, screen: "08" },
     { label: "New Order / Upload", href: "/orders/new", icon: FileText, screen: "09" },
+    { label: "Documents", href: "/documents", icon: FileStack, screen: "12" },
     { label: "T&A Tracker", href: "/tna", icon: ListChecks, screen: "13" },
+    { label: "My Tasks", href: "/tasks", icon: SquareCheckBig, screen: "14" },
     { label: "Delay Alerts", href: "/alerts", icon: TriangleAlert, screen: "15" },
+    { label: "Buyers", href: "/buyers", icon: UsersRound, screen: "16" },
     { label: "Email Assistant", href: "/email", icon: Mail, screen: "17" },
     { label: "Reports", href: "/reports", icon: BarChart3, screen: "18" },
-    { label: "Documents", href: "#", icon: FileStack, screen: "12", later: true },
-    { label: "My Tasks", href: "#", icon: SquareCheckBig, screen: "14", later: true },
-    { label: "Buyers", href: "#", icon: UsersRound, screen: "16", later: true },
-    { label: "Team", href: "#", icon: Users, screen: "19", later: true },
-    { label: "Settings", href: "#", icon: Settings, screen: "20", later: true },
+    { label: "Team", href: "/team", icon: Users, screen: "19" },
+    { label: "Settings", href: "/settings", icon: Settings, screen: "20" },
   ],
   admin: [
     { label: "Overview", href: "/admin", icon: ShieldCheck, screen: "21" },
-    { label: "Companies", href: "#", icon: Building2, screen: "22", later: true },
-    { label: "Subscriptions", href: "#", icon: CreditCard, screen: "23", later: true },
-    { label: "AI Usage", href: "#", icon: Cpu, screen: "24", later: true },
-    { label: "Processing Jobs", href: "#", icon: FileStack, screen: "25", later: true },
-    { label: "Support & Logs", href: "#", icon: ClipboardList, screen: "26", later: true },
+    { label: "Companies", href: "/admin/companies", icon: Building2, screen: "22" },
+    { label: "Subscriptions", href: "/admin/subscriptions", icon: CreditCard, screen: "23" },
+    { label: "AI Usage", href: "/admin/ai-usage", icon: Cpu, screen: "24" },
+    { label: "Processing Jobs", href: "/admin/jobs", icon: FileStack, screen: "25" },
+    { label: "Support & Logs", href: "/admin/support", icon: ClipboardList, screen: "26" },
   ],
 };
 
 function isActive(pathname: string, href: string) {
-  if (href === "/orders") return pathname === "/orders" || (/^\/orders\/(?!new)/.test(pathname));
+  if (href === "/orders") return pathname === "/orders" || /^\/orders\/(?!new)/.test(pathname);
+  if (href === "/admin") return pathname === "/admin";
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
@@ -99,8 +98,6 @@ function ActiveNavLinks(props: { items: NavItem[]; onNavigate?: () => void }) {
 
 function Sidebar({ area, companyName, onNavigate }: { area: "workspace" | "admin"; companyName: string; onNavigate?: () => void }) {
   const items = NAV[area];
-  const live = items.filter((i) => !i.later);
-  const later = items.filter((i) => i.later);
 
   return (
     <div className="flex h-full flex-col">
@@ -108,27 +105,10 @@ function Sidebar({ area, companyName, onNavigate }: { area: "workspace" | "admin
         <Logo href={area === "admin" ? "/admin" : "/dashboard"} suffix={area === "admin" ? " Admin" : ""} />
       </div>
       <div className="mx-[18px] h-px bg-border" />
-      <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-5" aria-label="Main">
-        <Suspense fallback={<NavLinks items={live} pathname={null} />}>
-          <ActiveNavLinks items={live} onNavigate={onNavigate} />
+      <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-4" aria-label="Main">
+        <Suspense fallback={<NavLinks items={items} pathname={null} />}>
+          <ActiveNavLinks items={items} onNavigate={onNavigate} />
         </Suspense>
-        {later.length > 0 && (
-          <>
-            <p className="px-3.5 pt-5 pb-1.5 text-[11px] font-semibold tracking-wide text-muted uppercase">Phase 2</p>
-            {later.map(({ label, icon: Icon, screen }) => (
-              <span
-                key={label}
-                className="flex h-9 cursor-not-allowed items-center gap-3 rounded-control px-3.5 text-[13px] text-muted"
-                title={`Screen ${screen} is scheduled for Phase 2`}
-                aria-disabled="true"
-              >
-                <Icon className="size-4" aria-hidden />
-                {label}
-                <span className="ml-auto rounded-full bg-subtle px-1.5 py-0.5 text-[10px] font-medium">Soon</span>
-              </span>
-            ))}
-          </>
-        )}
       </nav>
       <div className="mx-[18px] h-px bg-border" />
       <div className="flex items-center gap-2.5 px-6 py-5 text-caption font-medium text-ink">

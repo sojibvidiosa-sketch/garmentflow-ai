@@ -1,0 +1,17 @@
+# Public pages may be indexed; the signed-in app never is.
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /orders
+Disallow: /documents
+Disallow: /tna
+Disallow: /tasks
+Disallow: /alerts
+Disallow: /buyers
+Disallow: /email
+Disallow: /reports
+Disallow: /team
+Disallow: /settings
+Disallow: /admin
+Disallow: /onboarding
+Disallow: /auth
