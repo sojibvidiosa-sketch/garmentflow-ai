@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { CreateCompanyForm } from "@/components/auth/simple-forms";
+import { InvitationList } from "@/components/auth/invitation-list";
+import type { Role } from "@/lib/domain/types";
 import { Logo } from "@/components/layout/logo";
 import { Skeleton } from "@/components/ui/states";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
@@ -17,7 +19,14 @@ async function Onboarding() {
   const { count } = await supabase.from("company_memberships").select("company_id", { count: "exact", head: true }).eq("user_id", data.user.id);
   if (count) redirect("/dashboard");
   const suggested = (data.user.user_metadata?.company_name as string | undefined) ?? "";
-  return <CreateCompanyForm suggested={suggested} />;
+  const { data: invites } = await supabase.rpc("my_invitations");
+  const invitations = ((invites ?? []) as { id: string; company_name: string; role: Role }[]).map((i) => ({ id: i.id, companyName: i.company_name, role: i.role }));
+  return (
+    <>
+      {invitations.length > 0 && <InvitationList invitations={invitations} />}
+      <CreateCompanyForm suggested={invitations.length ? "" : suggested} />
+    </>
+  );
 }
 
 export default function OnboardingPage() {
@@ -26,7 +35,7 @@ export default function OnboardingPage() {
       <section className="w-full max-w-[520px] rounded-card border border-border bg-surface p-6 sm:p-10">
         <Logo suffix=" AI" />
         <h1 className="mt-8 text-[28px] font-semibold tracking-tight">Set up your workspace</h1>
-        <p className="mt-2 text-body text-secondary">Your email is confirmed. Name your buying house to finish. You will be its Company Admin.</p>
+        <p className="mt-2 text-body text-secondary">Your email is confirmed. Join the workspace you were invited to, or name your buying house to create one. You will be its Company Admin.</p>
         <Suspense fallback={<Skeleton className="mt-8 h-[120px]" />}>
           <Onboarding />
         </Suspense>

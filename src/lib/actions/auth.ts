@@ -77,6 +77,9 @@ export async function signUp(_prev: FormState, formData: FormData): Promise<Form
     // Email confirmation is on: the workspace is created after the user confirms.
     return { message: `We sent a confirmation link to ${parsed.data.email}. Open it to finish setting up ${companyName}.` };
   }
+  // Invited people join the inviting company instead of getting a new one.
+  const { data: invites } = await supabase.rpc("my_invitations");
+  if (invites?.length) redirect("/onboarding");
   const { data: companyId, error: rpcError } = await supabase.rpc("create_company", { company_name: companyName });
   if (rpcError) redirect("/onboarding");
   (await cookies()).set(ACTIVE_COMPANY_COOKIE, String(companyId), { httpOnly: true, sameSite: "lax", secure: true, path: "/" });

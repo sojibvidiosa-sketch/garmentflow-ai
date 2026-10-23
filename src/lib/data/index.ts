@@ -153,6 +153,35 @@ export async function listEmailDrafts(): Promise<import("./supabase").EmailDraft
   return [];
 }
 
+export type { CompanySettings, TeamData } from "./supabase";
+
+export async function getTeam(): Promise<import("./supabase").TeamData> {
+  if (isSupabaseConfigured) return (await live()).getTeam();
+  return {
+    members: demo.members.map((m) => ({ ...m, status: "active" as const, joinedAt: "2026-06-02T08:00:00Z" })),
+    invitations: [{ id: "inv-1", email: "nusrat@demo-sourcing.test", role: "merchandiser", expiresAt: "2026-10-28T08:00:00Z", createdAt: "2026-10-21T08:00:00Z" }],
+  };
+}
+
+export async function getCompanySettings(): Promise<import("./supabase").CompanySettings> {
+  if (isSupabaseConfigured) return (await live()).getCompanySettings();
+  const c = demo.companies[0]!;
+  return {
+    companyName: demo.DEMO_COMPANY_NAME,
+    plan: c.plan,
+    status: c.subscription,
+    seatLimit: 10,
+    poLimit: 150,
+    aiJobLimit: 300,
+    seatsUsed: demo.members.length,
+    activePos: demo.purchaseOrders.filter((o) => o.status !== "shipped" && o.status !== "cancelled").length,
+    aiJobsThisMonth: c.aiJobs30d,
+    aiCostThisMonth: c.aiCost30dUsd,
+    companies: [{ id: c.id, name: demo.DEMO_COMPANY_NAME }],
+    activeCompanyId: c.id,
+  };
+}
+
 /** Cross-company aggregates for platform admins (live version: Phase 8). */
 export async function getPlatformOverview() {
   if (isSupabaseConfigured) return { companies: [], jobs: [], available: false };

@@ -338,3 +338,73 @@ export async function listEmailDrafts(): Promise<EmailDraftRow[]> {
     .limit(50);
   return (data ?? []).map((d) => ({ id: d.id, poId: d.po_id, purpose: d.purpose, recipient: d.recipient_type, tone: d.tone, subject: d.subject, body: d.body, aiJobId: d.ai_job_id, updatedAt: d.updated_at }));
 }
+
+export interface TeamData {
+  members: { id: string; fullName: string; email: string; role: Role; status: "active" | "suspended"; joinedAt: string }[];
+  invitations: { id: string; email: string; role: Role; expiresAt: string; createdAt: string }[];
+}
+
+export async function getTeam(): Promise<TeamData> {
+  const ctx = await getContext();
+  const [{ data: rows }, { data: invites }] = await Promise.all([
+    ctx.supabase.from("company_memberships").select("user_id, role, status, created_at").eq("company_id", ctx.companyId).order("created_at"),
+    ctx.supabase.from("invitations").select("id, email, role, expires_at, created_at").eq("company_id", ctx.companyId).is("accepted_at", null).order("created_at", { ascending: false }),
+  ]);
+  const ids = (rows ?? []).map((r) => r.user_id);
+  const { data: profiles } = ids.length ? await ctx.supabase.from("profiles").select("id, full_name, email").in("id", ids) : { data: [] };
+  const byId = new Map((profiles ?? []).map((p) => [p.id, p]));
+  return {
+    members: (rows ?? []).map((r) => ({
+      id: r.user_id,
+      fullName: byId.get(r.user_id)?.full_name || byId.get(r.user_id)?.email || "Team member",
+      email: byId.get(r.user_id)?.email ?? "",
+      role: r.role as Role,
+      status: r.status as "active" | "suspended",
+      joinedAt: r.created_at,
+    })),
+    invitations: (invites ?? []).map((i) => ({ id: i.id, email: i.email, role: i.role as Role, expiresAt: i.expires_at, createdAt: i.created_at })),
+  };
+}
+
+export interface CompanySettings {
+  companyName: string;
+  plan: string;
+  status: string;
+  seatLimit: number;
+  poLimit: number;
+  aiJobLimit: number;
+  seatsUsed: number;
+  activePos: number;
+  aiJobsThisMonth: number;
+  aiCostThisMonth: number;
+  companies: { id: string; name: string }[];
+  activeCompanyId: string;
+}
+
+export async function getCompanySettings(): Promise<CompanySettings> {
+  const ctx = await getContext();
+  const start = new Date();
+  start.setUTCDate(1);
+  start.setUTCHours(0, 0, 0, 0);
+  const [{ data: sub }, { count: seats }, { count: pos }, { data: jobs }, { data: mine }] = await Promise.all([
+    ctx.supabase.from("subscriptions").select("plan, status, seat_limit, po_limit, ai_job_limit").eq("company_id", ctx.companyId).maybeSingle(),
+    ctx.supabase.from("company_memberships").select("user_id", { count: "exact", head: true }).eq("company_id", ctx.companyId).eq("status", "active"),
+    ctx.supabase.from("purchase_orders").select("id", { count: "exact", head: true }).eq("company_id", ctx.companyId).not("status", "in", "(shipped,cancelled)"),
+    ctx.supabase.from("ai_jobs").select("cost_usd").eq("company_id", ctx.companyId).gte("created_at", start.toISOString()),
+    ctx.supabase.from("company_memberships").select("company_id, companies(name)").eq("user_id", ctx.userId).eq("status", "active"),
+  ]);
+  return {
+    companyName: ctx.companyName,
+    plan: sub?.plan ?? "pilot",
+    status: sub?.status ?? "trialing",
+    seatLimit: sub?.seat_limit ?? 5,
+    poLimit: sub?.po_limit ?? 50,
+    aiJobLimit: sub?.ai_job_limit ?? 300,
+    seatsUsed: seats ?? 0,
+    activePos: pos ?? 0,
+    aiJobsThisMonth: jobs?.length ?? 0,
+    aiCostThisMonth: (jobs ?? []).reduce((s, j) => s + Number(j.cost_usd), 0),
+    companies: (mine ?? []).map((m) => ({ id: m.company_id, name: (m.companies as unknown as { name: string } | null)?.name ?? "Workspace" })),
+    activeCompanyId: ctx.companyId,
+  };
+}
