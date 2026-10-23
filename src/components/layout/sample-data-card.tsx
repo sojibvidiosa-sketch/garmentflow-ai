@@ -5,7 +5,8 @@ import { Database } from "lucide-react";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState, Notice } from "@/components/ui/states";
-import { loadSampleData, type SampleState } from "@/lib/data/sample-actions";
+import { loadSampleData } from "@/lib/actions/sample";
+import type { SampleState } from "@/lib/actions/types";
 
 /** Shown on an empty live workspace. */
 export function SampleDataCard() {

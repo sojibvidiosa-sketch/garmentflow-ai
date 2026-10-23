@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { Plus } from "lucide-react";
+import { PenLine, Upload } from "lucide-react";
 import { ButtonLink } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/states";
@@ -16,7 +16,12 @@ export default async function OrdersPage() {
       <PageHeader
         title="Purchase Orders"
         description={`${rows.length} orders in this workspace`}
-        actions={<ButtonLink href="/orders/new" icon={<Plus className="size-4" />}>New order</ButtonLink>}
+        actions={
+          <>
+            <ButtonLink href="/orders/create" variant="secondary" icon={<PenLine className="size-4" />}>Create manually</ButtonLink>
+            <ButtonLink href="/orders/new" icon={<Upload className="size-4" />}>Upload buyer document</ButtonLink>
+          </>
+        }
       />
       {/* PoTable reads ?q= from the URL, which is request-time data. */}
       <Suspense fallback={<Skeleton className="h-[560px] w-full rounded-card" />}>

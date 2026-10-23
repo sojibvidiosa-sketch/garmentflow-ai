@@ -5,12 +5,8 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { ACTIVE_COMPANY_COOKIE, isSupabaseConfigured } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
+import type { FormState } from "./types";
 
-export interface FormState {
-  error?: string;
-  fieldErrors?: Record<string, string>;
-  message?: string;
-}
 
 const NOT_CONFIGURED: FormState = { error: "Sign-in is not connected yet. Explore the demo workspace instead." };
 

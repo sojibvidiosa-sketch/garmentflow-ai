@@ -16,12 +16,10 @@ const nextConfig: NextConfig = {
   cacheComponents: !staticDemo,
   partialPrefetching: !staticDemo,
   turbopack: {
-    // The static demo has no server, so server actions become stand-ins.
+    // The static demo has no server: each server-action module "x.ts" is
+    // replaced by its demo stand-in "x.static.ts" when one exists.
     ...(staticDemo && {
-      resolveAlias: {
-        "@/lib/auth/actions": "./src/lib/demo/static-actions.ts",
-        "@/lib/data/sample-actions": "./src/lib/demo/static-actions.ts",
-      },
+      resolveExtensions: [".static.ts", ".tsx", ".ts", ".jsx", ".js", ".mjs", ".json"],
     }),
     rules: {
       "*.css": {

@@ -4,12 +4,9 @@ import { revalidatePath } from "next/cache";
 import * as demo from "@/lib/demo/data";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { addDays, daysBetween } from "@/lib/utils";
-import { getContext } from "./supabase";
+import { getContext } from "@/lib/data/supabase";
+import type { SampleState } from "./types";
 
-export interface SampleState {
-  error?: string;
-  done?: boolean;
-}
 
 /**
  * Copies the fictional sample dataset into the caller's own (empty)

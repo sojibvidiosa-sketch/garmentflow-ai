@@ -3,7 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { ArrowLeft, FileText, Mail, Pencil } from "lucide-react";
-import { Button, ButtonLink } from "@/components/ui/button";
+import { ButtonLink } from "@/components/ui/button";
+import { CreatePlanButton, DeleteOrderButton, StatusControl } from "@/components/orders/order-actions";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { EmptyState, Skeleton } from "@/components/ui/states";
@@ -55,13 +56,15 @@ async function OrderDetail({ params }: { params: PageProps<"/orders/[id]">["para
         title={po.poNumber}
         description={
           <span className="flex flex-wrap items-center gap-2">
-            {buyer?.name} · {po.items[0]?.description} · {formatNumber(quantity)} pcs <PoStatusBadge status={po.status} />
+            {buyer?.name ?? "No buyer"} · {po.items[0]?.description} · {formatNumber(quantity)} pcs <PoStatusBadge status={po.status} />
           </span>
         }
         actions={
           <>
+            <StatusControl id={po.id} status={po.status} />
             <ButtonLink href={`/email?po=${po.id}`} variant="secondary" icon={<Mail className="size-4" />}>Draft email</ButtonLink>
-            <Button disabled title="Editing is enabled with the database in Phase 3" icon={<Pencil className="size-4" />}>Edit order</Button>
+            <ButtonLink href={`/orders/${po.id}/edit`} icon={<Pencil className="size-4" />}>Edit order</ButtonLink>
+            <DeleteOrderButton id={po.id} poNumber={po.poNumber} />
           </>
         }
       />
@@ -123,7 +126,11 @@ async function OrderDetail({ params }: { params: PageProps<"/orders/[id]">["para
             />
             <CardBody>
               {ordered.length === 0 ? (
-                <EmptyState title="No T&A plan yet" description="A T&A plan is created after the order is approved." />
+                <EmptyState
+                  title="No T&A plan yet"
+                  description="Create the standard garment plan from this order's ship date. You can adjust every date afterwards."
+                  action={po.shipDate ? <CreatePlanButton poId={po.id} /> : <p className="text-caption text-red">Add a ship date first (Edit order).</p>}
+                />
               ) : (
                 <ol className="relative space-y-1 before:absolute before:top-3 before:bottom-3 before:left-[11px] before:w-px before:bg-border">
                   {ordered.map((m) => {
@@ -171,7 +178,7 @@ async function OrderDetail({ params }: { params: PageProps<"/orders/[id]">["para
                   </div>
                 ))
               )}
-              <p className="pt-1 text-caption text-muted">Secure file download is enabled with private storage in Phase 4.</p>
+              <Link href="/documents" className="block pt-1 text-caption font-semibold text-violet hover:underline">Open document center</Link>
             </CardBody>
           </Card>
 

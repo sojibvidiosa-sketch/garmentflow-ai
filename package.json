@@ -9,7 +9,7 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:db": "vitest run supabase",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "next typegen && tsc --noEmit",
     "build:demo": "STATIC_DEMO=1 next build"
   },
   "dependencies": {

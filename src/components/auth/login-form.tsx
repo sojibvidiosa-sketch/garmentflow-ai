@@ -7,7 +7,8 @@ import { Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/form";
 import { Notice } from "@/components/ui/states";
-import { signIn, type FormState } from "@/lib/auth/actions";
+import { signIn } from "@/lib/actions/auth";
+import type { FormState } from "@/lib/actions/types";
 
 export function PasswordInput({ id, name, autoComplete, error }: { id: string; name: string; autoComplete: string; error?: string }) {
   const [show, setShow] = useState(false);

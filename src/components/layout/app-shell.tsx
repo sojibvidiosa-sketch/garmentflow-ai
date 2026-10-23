@@ -28,7 +28,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { Logo } from "./logo";
-import { signOut } from "@/lib/auth/actions";
+import { signOut } from "@/lib/actions/auth";
 import { cn, initials } from "@/lib/utils";
 
 interface NavItem {

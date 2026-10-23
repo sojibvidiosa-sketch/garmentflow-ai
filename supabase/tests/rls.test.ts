@@ -34,13 +34,13 @@ function pgliteDb(): Db {
 function realDb(url: string): Db {
   const pool = new pg.Pool({ connectionString: url, max: 2 });
   return {
-    query: async (sql, params) => pool.query(sql, params as unknown[]),
+    query: async <T,>(sql: string, params?: unknown[]) => (await pool.query(sql, params)) as unknown as { rows: T[] },
     exec: (sql) => pool.query(sql),
     async transaction(fn) {
       const client = await pool.connect();
       try {
         await client.query("begin");
-        const result = await fn({ query: async (sql, params) => client.query(sql, params as unknown[]), exec: (sql) => client.query(sql) });
+        const result = await fn({ query: async <T,>(sql: string, params?: unknown[]) => (await client.query(sql, params)) as unknown as { rows: T[] }, exec: (sql) => client.query(sql) });
         await client.query("commit");
         return result;
       } catch (e) {

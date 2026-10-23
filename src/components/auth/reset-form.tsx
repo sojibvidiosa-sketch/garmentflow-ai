@@ -6,7 +6,8 @@ import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/form";
 import { Notice } from "@/components/ui/states";
-import { requestPasswordReset, type FormState } from "@/lib/auth/actions";
+import { requestPasswordReset } from "@/lib/actions/auth";
+import type { FormState } from "@/lib/actions/types";
 
 export function ResetForm({ enabled }: { enabled: boolean }) {
   const [state, action, pending] = useActionState<FormState, FormData>(requestPasswordReset, {});

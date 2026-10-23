@@ -4,7 +4,8 @@ import { useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/form";
 import { Notice } from "@/components/ui/states";
-import { createCompany, updatePassword, type FormState } from "@/lib/auth/actions";
+import { createCompany, updatePassword } from "@/lib/actions/auth";
+import type { FormState } from "@/lib/actions/types";
 import { PasswordInput } from "./login-form";
 
 export function NewPasswordForm() {
