@@ -116,19 +116,21 @@ Screen numbers match the Figma file (`00 · Product Map`).
 - [ ] Invite teammates UI + company switcher (backend RPC `accept_invitation` ready)
 - [ ] Apply migrations on the real Supabase project and smoke-test sign-up end to end
 
-**Phase 3 — Purchase orders:** create/edit forms, status changes, assignment, notes, revisions trigger, server pagination.
+**Phase 3: Purchase orders** ✅ create/edit form with styles and colour × size grid, status changes, delete, buyer directory, atomic save RPC.
 
-**Phase 4 — OpenAI extraction:** signed uploads, PDF text extraction, Structured Outputs schema, job table + retries, review persistence, approve transaction, usage/cost logging, per-company quota.
+**Phase 4: OpenAI extraction** ✅ signed direct-to-storage uploads, document center, structured-output extraction with evidence quotes, AI job tracking (tokens, cost), monthly quota, stored review, approval creates the order and links the document.
 
-**Phase 5 — T&A:** templates, plan creation from ship date (user-reviewed), milestone edit/complete, history.
+**Phase 5: T&A** ✅ plan from template (dates stay editable), edit and complete milestones from the tracker, order page and My Tasks; changes recorded in history.
 
-**Phase 6 — Alerts:** cron route + `notifications`, read state, top-bar badge from DB, optional email digest later.
+**Phase 6: Alerts** ✅ deterministic rules computed on each visit; per-user read state saved; bell shows unread urgent alerts. (A daily email digest is a later option.)
 
-**Phase 7 — Email & reports AI:** draft endpoint + saved drafts, report narrative, server-side PDF if print is not enough.
+**Phase 7: Email & reports AI** ✅ AI drafts from server-loaded order facts, saved drafts, report narrative from computed figures.
 
-**Phase 8 — Admin:** platform_admins, aggregates, failed-job view, audit log viewer.
+**Phase 8: Admin** ✅ companies, subscriptions with editable limits, AI usage and cost, processing jobs with errors, support log and demo requests, all metadata-only.
 
-**Phase 9 — Hardening & launch:** Playwright E2E for the full journey, RLS leakage tests, rate limiting, security headers/CSP, Sentry (free tier), backups (Supabase daily + export test), Vercel deploy, production smoke test, pilot onboarding guide.
+**Team & settings** ✅ invitations, roles, suspend/remove (always one admin), seat/PO limits per plan, profile, password, workspace switcher.
+
+**Phase 9: Hardening & launch** ✅ security headers, robots.txt, privacy/terms drafts, 16 RLS tests (also run on real Supabase Postgres), 26 unit tests, browser sweep of all 29 routes at desktop and phone width. Remaining: your 10-minute launch test on the real Supabase project (`docs/GO_LIVE.md`), legal review, SMTP provider.
 
 ---
 

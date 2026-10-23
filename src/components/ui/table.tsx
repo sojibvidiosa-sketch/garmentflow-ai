@@ -7,7 +7,8 @@ import { cn } from "@/lib/utils";
 /** Data table primitives, styled after Figma "Data table" on Screen 08. */
 export function Table({ className, children, ...props }: ComponentProps<"table">) {
   return (
-    <div className="overflow-x-auto">
+    // `relative` keeps visually-hidden header labels inside the scroll area.
+    <div className="relative overflow-x-auto">
       <table className={cn("w-full min-w-[720px] border-separate border-spacing-0 text-[13px]", className)} {...props}>
         {children}
       </table>
