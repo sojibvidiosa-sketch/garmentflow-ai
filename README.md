@@ -22,6 +22,12 @@ npm run dev                  # http://localhost:3000
 | `npm run typecheck` | TypeScript check |
 | `npm test` | Unit tests (Vitest) — deadline rules, reports, CSV safety, validation |
 
+## Live demo (GitHub Pages)
+
+`npm run build:demo` writes a fully static copy of the demo to `out/`. The workflow `.github/workflows/deploy-demo.yml` runs lint + tests, builds it and publishes it to GitHub Pages on every push to `main`.
+
+One-time setup: repository **Settings → Pages → Source: GitHub Actions**. Free GitHub accounts can use Pages only on public repositories.
+
 ## Screens (Figma numbering)
 
 | # | Screen | Route |

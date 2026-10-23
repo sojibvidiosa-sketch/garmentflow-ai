@@ -9,6 +9,10 @@ import { getSampleExtraction } from "@/lib/data";
 
 export const metadata: Metadata = { title: "AI Extraction & Review" };
 
+export function generateStaticParams() {
+  return [{ jobId: "sample" }];
+}
+
 async function Review({ params }: { params: PageProps<"/orders/review/[jobId]">["params"] }) {
   const { jobId } = await params;
   // Phase 1 only has the built-in sample. Phase 4 loads the job's stored

@@ -176,7 +176,7 @@ export function AppShell({
         <button type="button" className="-ml-1 rounded-md p-2 text-secondary hover:bg-subtle lg:hidden" onClick={() => setOpen(true)} aria-label="Open navigation">
           <Menu className="size-5" />
         </button>
-        <form action="/orders" className="relative hidden max-w-md flex-1 sm:block" role="search">
+        <form action={`${process.env.NEXT_PUBLIC_BASE_PATH}/orders/`} className="relative hidden max-w-md flex-1 sm:block" role="search">
           <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted" aria-hidden />
           <input
             name="q"

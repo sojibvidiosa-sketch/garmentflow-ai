@@ -8,13 +8,18 @@ import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { EmptyState, Skeleton } from "@/components/ui/states";
 import { DeadlineBadge, MilestoneStatusBadge, PoStatusBadge } from "@/components/domain/status-badges";
-import { getPurchaseOrder, getToday, listMembers } from "@/lib/data";
+import { getPurchaseOrder, getToday, listMembers, listPurchaseOrders } from "@/lib/data";
 import { deadlineState } from "@/lib/domain/deadlines";
 import { MILESTONE_LABEL, MILESTONE_ORDER } from "@/lib/domain/labels";
 import { formatBytes } from "@/lib/upload-rules";
 import { formatDate, formatDateTime, formatNumber } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Purchase Order" };
+
+/** Prerender known orders (demo data). New orders still render on demand. */
+export async function generateStaticParams() {
+  return (await listPurchaseOrders()).map((po) => ({ id: po.id }));
+}
 
 function Info({ label, value }: { label: string; value: React.ReactNode }) {
   return (
