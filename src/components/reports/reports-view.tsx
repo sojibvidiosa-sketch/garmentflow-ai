@@ -42,7 +42,7 @@ export function ReportsView({ reports, today, aiAvailable, aiNote }: { reports: 
             onClick={() => setKey(r.key)}
             className={cn(
               "rounded-control border px-3.5 py-2 text-caption font-medium transition-colors",
-              key === r.key ? "border-violet bg-violet-light text-violet" : "border-border bg-surface text-secondary hover:text-ink",
+              key === r.key ? "border-brand bg-brand-light text-brand-strong" : "border-border bg-surface text-secondary hover:text-ink",
             )}
           >
             {r.title}

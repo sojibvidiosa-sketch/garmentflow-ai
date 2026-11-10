@@ -3,26 +3,27 @@ import type { ComponentProps, ReactNode } from "react";
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-/** Figma "GF / Button": Style = Primary | Secondary | Dark, State = Default | Disabled. */
-export type ButtonVariant = "dark" | "primary" | "secondary" | "ghost" | "danger";
+/** Primary = blue product action, ai = purple AI action, secondary = outlined. "dark" is a legacy alias of primary. */
+export type ButtonVariant = "dark" | "primary" | "ai" | "secondary" | "ghost" | "danger";
 export type ButtonSize = "sm" | "md";
 
 const variants: Record<ButtonVariant, string> = {
-  dark: "bg-dark text-white hover:bg-dark-hover",
-  primary: "bg-violet text-white hover:bg-violet-hover",
-  secondary: "bg-surface text-ink border border-border hover:bg-subtle",
+  dark: "bg-brand text-white shadow-sm hover:bg-brand-strong",
+  primary: "bg-brand text-white shadow-sm hover:bg-brand-strong",
+  ai: "bg-ai text-white shadow-sm hover:bg-ai-strong",
+  secondary: "bg-surface text-ink border border-border shadow-sm hover:bg-bg hover:border-border-strong",
   ghost: "text-secondary hover:bg-subtle hover:text-ink",
-  danger: "bg-red text-white hover:brightness-95",
+  danger: "bg-red text-white shadow-sm hover:brightness-95",
 };
 
 const sizes: Record<ButtonSize, string> = {
   sm: "h-8 px-3 text-xs gap-1.5",
-  md: "h-10 px-4 text-[13px] gap-2",
+  md: "h-9 px-3.5 text-[13px] gap-2",
 };
 
-export function buttonClasses(variant: ButtonVariant = "dark", size: ButtonSize = "md", className?: string) {
+export function buttonClasses(variant: ButtonVariant = "primary", size: ButtonSize = "md", className?: string) {
   return cn(
-    "inline-flex shrink-0 items-center justify-center rounded-control font-semibold whitespace-nowrap transition-colors",
+    "inline-flex shrink-0 items-center justify-center rounded-control font-medium whitespace-nowrap transition-colors",
     "disabled:cursor-not-allowed disabled:opacity-45 aria-disabled:pointer-events-none aria-disabled:opacity-45",
     variants[variant],
     sizes[size],

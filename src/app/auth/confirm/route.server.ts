@@ -9,10 +9,10 @@ import { createClient } from "@/lib/supabase/server";
  */
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
-  const next = searchParams.get("next") ?? "/dashboard";
+  const next = searchParams.get("next") ?? "/app/dashboard";
   const target = request.nextUrl.clone();
   target.search = "";
-  target.pathname = next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard";
+  target.pathname = next.startsWith("/") && !next.startsWith("//") ? next : "/app/dashboard";
 
   const supabase = await createClient();
   const tokenHash = searchParams.get("token_hash");

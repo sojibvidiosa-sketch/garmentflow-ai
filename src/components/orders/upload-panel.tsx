@@ -71,7 +71,7 @@ export function UploadPanel({ live }: { live: boolean }) {
         jobId = res.data;
       }
       setStep("Opening the review screen…");
-      router.push(`/orders/review/${jobId}`);
+      router.push(`/app/import/review/${jobId}`);
     });
   }
 
@@ -93,7 +93,7 @@ export function UploadPanel({ live }: { live: boolean }) {
               onClick={() => { setMode(value); setError(null); setAttempted(false); }}
               className={cn(
                 "-mb-px inline-flex items-center gap-2 border-b-2 px-3 pb-3 text-[13px] font-medium",
-                mode === value ? "border-violet text-violet" : "border-transparent text-secondary hover:text-ink",
+                mode === value ? "border-brand text-brand-strong" : "border-transparent text-secondary hover:text-ink",
               )}
             >
               <Icon className="size-4" aria-hidden /> {label}
@@ -105,7 +105,7 @@ export function UploadPanel({ live }: { live: boolean }) {
           {mode === "file" ? (
             file ? (
               <div className="flex items-center gap-3 rounded-card border border-border bg-subtle p-4">
-                <div className="grid size-10 place-items-center rounded-control bg-violet-light text-violet">
+                <div className="grid size-10 place-items-center rounded-control bg-brand-light text-brand-strong">
                   <FileText className="size-5" />
                 </div>
                 <div className="min-w-0 flex-1">
@@ -125,10 +125,10 @@ export function UploadPanel({ live }: { live: boolean }) {
                 onDrop={onDrop}
                 className={cn(
                   "flex flex-col items-center rounded-card border-2 border-dashed px-6 py-14 text-center transition-colors",
-                  dragging ? "border-violet bg-violet-light/60" : "border-border bg-subtle",
+                  dragging ? "border-brand bg-brand-light/60" : "border-border bg-subtle",
                 )}
               >
-                <div className="grid size-12 place-items-center rounded-full bg-surface text-violet shadow-card">
+                <div className="grid size-12 place-items-center rounded-full bg-surface text-brand-strong shadow-card">
                   <UploadCloud className="size-6" />
                 </div>
                 <p className="mt-4 text-[15px] font-semibold">Drag a buyer PO or tech pack here</p>
@@ -160,14 +160,14 @@ export function UploadPanel({ live }: { live: boolean }) {
             <div className="flex flex-wrap items-center gap-4 text-[13px]" role="radiogroup" aria-label="Document type">
               {([["purchase_order", "Purchase order"], ["tech_pack", "Tech pack"]] as const).map(([v, l]) => (
                 <label key={v} className="flex items-center gap-2">
-                  <input type="radio" name="kind" checked={kind === v} onChange={() => setKind(v)} className="accent-violet" /> {l}
+                  <input type="radio" name="kind" checked={kind === v} onChange={() => setKind(v)} className="accent-brand" /> {l}
                 </label>
               ))}
             </div>
           )}
 
           {step && (
-            <div className="flex items-center gap-3 rounded-control border border-violet/20 bg-violet-light px-4 py-3 text-[13px] text-violet" role="status">
+            <div className="flex items-center gap-3 rounded-control border border-brand/20 bg-brand-light px-4 py-3 text-[13px] text-brand-strong" role="status">
               <Loader2 className="size-4 animate-spin" /> {step}
             </div>
           )}
@@ -177,14 +177,14 @@ export function UploadPanel({ live }: { live: boolean }) {
           {attempted && (
             <Notice tone="warning" title="Demo mode: nothing was uploaded">
               Your input passed validation, but the demo does not upload files or call AI. Create a workspace to use real extraction, or preview the{" "}
-              <Link href="/orders/review/sample" className="font-semibold underline">review screen with a sample document</Link>.
+              <Link href="/app/import/review/sample" className="font-semibold underline">review screen with a sample document</Link>.
             </Notice>
           )}
 
           <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-5">
-            <ButtonLink href="/orders/review/sample" variant="ghost">Preview sample review</ButtonLink>
+            <ButtonLink href="/app/import/review/sample" variant="ghost">Preview sample review</ButtonLink>
             <div className="flex flex-wrap gap-2">
-              <ButtonLink href="/orders/create" variant="secondary">Enter manually</ButtonLink>
+              <ButtonLink href="/app/orders/new/manual" variant="secondary">Enter manually</ButtonLink>
               <Button onClick={submit} loading={busy}>Extract order details</Button>
             </div>
           </div>
@@ -202,7 +202,7 @@ export function UploadPanel({ live }: { live: boolean }) {
               ["You approve", "Only approved information becomes a purchase order."],
             ].map(([title, body], i) => (
               <li key={title} className="flex gap-3">
-                <span className="grid size-6 shrink-0 place-items-center rounded-full bg-violet-light text-[11px] font-semibold text-violet">{i + 1}</span>
+                <span className="grid size-6 shrink-0 place-items-center rounded-full bg-brand-light text-[11px] font-semibold text-brand-strong">{i + 1}</span>
                 <span>
                   <span className="font-semibold">{title}</span>
                   <span className="block text-secondary">{body}</span>

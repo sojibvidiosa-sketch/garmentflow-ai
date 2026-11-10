@@ -6,7 +6,7 @@ import { FlaskConical } from "lucide-react";
  */
 export function DemoBanner({ today }: { today: string }) {
   return (
-    <div className="no-print mb-6 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-control border border-yellow/25 bg-yellow-light px-3.5 py-2.5 text-caption text-[#7d5210]">
+    <div className="no-print mb-6 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-control border border-yellow/25 bg-yellow-light px-3.5 py-2.5 text-caption text-[#92400e]">
       <FlaskConical className="size-4 shrink-0" aria-hidden />
       <p>
         <span className="font-semibold">Demo mode</span> — fictional sample data, nothing is saved. Deadline rules are evaluated as of{" "}

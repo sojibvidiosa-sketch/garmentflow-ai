@@ -197,7 +197,7 @@ export function EmailComposer({ orders, drafts, live, aiEnabled }: { orders: Com
               ) : (
                 <ul className="space-y-1">
                   {drafts.map((d) => (
-                    <li key={d.id} className={cn("flex items-start gap-2 rounded-control px-2 py-2", d.id === draftId && "bg-violet-light")}>
+                    <li key={d.id} className={cn("flex items-start gap-2 rounded-control px-2 py-2", d.id === draftId && "bg-brand-light")}>
                       <button type="button" onClick={() => load(d)} className="min-w-0 flex-1 text-left">
                         <span className="block truncate text-[13px] font-medium">{d.subject}</span>
                         <span className="text-caption text-secondary">
@@ -220,7 +220,7 @@ export function EmailComposer({ orders, drafts, live, aiEnabled }: { orders: Com
         <CardHeader
           title={draftId ? "Edit draft" : "Draft"}
           action={
-            origin === "ai" ? <Badge tone="violet">AI draft: check before sending</Badge> : origin === "template" ? <Badge tone="neutral">Standard template, not AI-generated</Badge> : undefined
+            origin === "ai" ? <Badge tone="ai">AI draft: check before sending</Badge> : origin === "template" ? <Badge tone="neutral">Standard template, not AI-generated</Badge> : undefined
           }
         />
         <CardBody className="space-y-4">

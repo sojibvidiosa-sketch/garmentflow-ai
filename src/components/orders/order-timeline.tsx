@@ -42,7 +42,7 @@ export function OrderTimeline({
               <div className="flex items-center gap-2">
                 <MilestoneStatusBadge status={m.status} />
                 {m.state !== "done" && m.state !== "upcoming" && <DeadlineBadge state={m.state} />}
-                <button type="button" onClick={() => setSelected(m)} className="rounded-control px-2 py-1 text-caption font-semibold text-violet hover:bg-violet-light">
+                <button type="button" onClick={() => setSelected(m)} className="rounded-control px-2 py-1 text-caption font-semibold text-brand-strong hover:bg-brand-light">
                   {canEdit ? "Update" : "View"}
                 </button>
               </div>

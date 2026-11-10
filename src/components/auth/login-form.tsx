@@ -32,32 +32,41 @@ export function PasswordInput({ id, name, autoComplete, error }: { id: string; n
 }
 
 export function LoginForm({ enabled }: { enabled: boolean }) {
-  const next = useSearchParams().get("next");
+  const search = useSearchParams();
+  const next = search.get("next");
+  const linkExpired = search.get("error") === "link_expired";
   const [state, action, pending] = useActionState<FormState, FormData>(signIn, {});
   const fe = state.fieldErrors ?? {};
 
   return (
-    <form action={action} noValidate className="mt-10 space-y-6">
-      <input type="hidden" name="next" value={next ?? "/dashboard"} />
+    <form action={action} noValidate className="mt-8 space-y-5">
+      {linkExpired && !state.error && (
+        <Notice tone="warning" title="That link has expired or was already used">Sign in, or request a new link.</Notice>
+      )}
+      <input type="hidden" name="next" value={next ?? "/app/dashboard"} />
       <Field label="Email address" htmlFor="email" error={fe.email}>
         <Input id="email" name="email" type="email" autoComplete="email" placeholder="you@company.com" aria-invalid={!!fe.email} />
       </Field>
-      <Field label="Password" htmlFor="password" error={fe.password}>
+      <Field
+        label="Password"
+        htmlFor="password"
+        error={fe.password}
+        aside={<Link href="/forgot-password" className="text-caption font-medium text-brand-strong hover:underline">Forgot password?</Link>}
+      >
         <PasswordInput id="password" name="password" autoComplete="current-password" error={fe.password} />
       </Field>
 
       {!enabled && (
         <Notice tone="warning" title="Sign-in is not connected on this demo site">
-          Explore the <Link href="/dashboard" className="font-semibold underline">demo workspace</Link> with fictional data.
+          Explore the <Link href="/app/dashboard" className="font-semibold underline">demo workspace</Link> with fictional data.
         </Notice>
       )}
       {state.error && enabled && <Notice tone="error">{state.error}</Notice>}
 
       <Button type="submit" className="w-full" loading={pending} disabled={!enabled}>Sign in</Button>
-      <div className="flex flex-wrap justify-between gap-2 text-caption font-medium">
-        <Link href="/forgot-password" className="text-violet hover:underline">Forgot password?</Link>
-        <Link href="/signup" className="text-violet hover:underline">Create a workspace</Link>
-      </div>
+      <p className="text-[13px] text-secondary">
+        New to GarmentFlow? <Link href="/signup" className="font-medium text-brand-strong hover:underline">Create a workspace</Link>
+      </p>
     </form>
   );
 }

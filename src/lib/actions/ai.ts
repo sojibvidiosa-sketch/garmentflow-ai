@@ -129,7 +129,7 @@ export async function saveEmailDraft(input: z.infer<typeof draftSchema>): Promis
     ? await supabase.from("email_drafts").update(row).eq("id", v.id).eq("company_id", companyId).select("id").single()
     : await supabase.from("email_drafts").insert({ ...row, company_id: companyId }).select("id").single();
   if (error) return dbFail(error.message, "The draft could not be saved.");
-  revalidatePath("/email");
+  revalidatePath("/app/email");
   return { ok: true, data: data.id, message: "Draft saved." };
 }
 
@@ -139,7 +139,7 @@ export async function deleteEmailDraft(id: string): Promise<ActionResult> {
   if (!z.uuid().safeParse(id).success) return { ok: false, error: "Unknown draft." };
   const { error } = await guard.ctx.supabase.from("email_drafts").delete().eq("id", id).eq("company_id", guard.ctx.companyId);
   if (error) return dbFail(error.message, "The draft could not be deleted.");
-  revalidatePath("/email");
+  revalidatePath("/app/email");
   return { ok: true, message: "Draft deleted." };
 }
 

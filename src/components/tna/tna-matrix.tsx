@@ -90,7 +90,7 @@ export function TnaMatrix({ rows, buyers, members, canEdit }: { rows: TnaRow[]; 
                 {visible.map((row) => (
                   <tr key={row.poId}>
                     <th scope="row" className="sticky left-0 z-10 border-b border-border bg-surface px-4 py-2.5 text-left font-normal">
-                      <Link href={`/orders/${row.poId}`} className="text-[13px] font-semibold hover:text-violet">{row.poNumber}</Link>
+                      <Link href={`/app/orders/${row.poId}`} className="text-[13px] font-semibold hover:text-brand-strong">{row.poNumber}</Link>
                       <span className="block text-caption text-secondary">{row.buyer} · {row.style}</span>
                     </th>
                     {MILESTONE_ORDER.map((k) => {

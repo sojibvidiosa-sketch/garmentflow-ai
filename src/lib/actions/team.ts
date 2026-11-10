@@ -21,7 +21,7 @@ export async function inviteMember(input: { email: string; role: string }): Prom
     .from("invitations")
     .upsert({ company_id: companyId, email: parsed.data.email, role: parsed.data.role, invited_by: userId, accepted_at: null, expires_at: new Date(Date.now() + 7 * 86_400_000).toISOString() }, { onConflict: "company_id,email" });
   if (error) return dbFail(error.message, "The invitation could not be created.");
-  revalidatePath("/team");
+  revalidatePath("/office/team");
   return { ok: true, message: `Invitation ready. Ask ${parsed.data.email} to create an account (or sign in) with that email. They will see the invitation and can join. It expires in 7 days.` };
 }
 
@@ -31,7 +31,7 @@ export async function revokeInvitation(id: string): Promise<ActionResult> {
   if (!z.uuid().safeParse(id).success) return { ok: false, error: "Unknown invitation." };
   const { error } = await guard.ctx.supabase.from("invitations").delete().eq("id", id).eq("company_id", guard.ctx.companyId);
   if (error) return dbFail(error.message, "The invitation could not be revoked.");
-  revalidatePath("/team");
+  revalidatePath("/office/team");
   return { ok: true, message: "Invitation revoked." };
 }
 
@@ -46,7 +46,7 @@ export async function updateMember(input: { userId: string; role: string; status
     .eq("company_id", guard.ctx.companyId)
     .eq("user_id", parsed.data.userId);
   if (error || !count) return dbFail(error?.message, "The member could not be updated.");
-  revalidatePath("/team");
+  revalidatePath("/office/team");
   return { ok: true, message: "Member updated." };
 }
 
@@ -56,7 +56,7 @@ export async function removeMember(userId: string): Promise<ActionResult> {
   if (!z.uuid().safeParse(userId).success) return { ok: false, error: "Unknown member." };
   const { error, count } = await guard.ctx.supabase.from("company_memberships").delete({ count: "exact" }).eq("company_id", guard.ctx.companyId).eq("user_id", userId);
   if (error || !count) return dbFail(error?.message, "The member could not be removed.");
-  revalidatePath("/team");
+  revalidatePath("/office/team");
   return { ok: true, message: "Member removed from this workspace." };
 }
 

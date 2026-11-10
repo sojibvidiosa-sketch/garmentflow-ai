@@ -102,7 +102,7 @@ export function BuyersManager({ buyers, canDelete }: { buyers: BuyerRow[]; canDe
               {visible.map((b) => (
                 <Tr key={b.id}>
                   <Td className="font-semibold">
-                    <Link href={`/orders?q=${encodeURIComponent(b.name)}`} className="hover:text-violet">{b.name}</Link>
+                    <Link href={`/app/orders?q=${encodeURIComponent(b.name)}`} className="hover:text-brand-strong">{b.name}</Link>
                   </Td>
                   <Td>{b.country || "—"}</Td>
                   <Td className="text-secondary">{b.contactEmail || "—"}</Td>

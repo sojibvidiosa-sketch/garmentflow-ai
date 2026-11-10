@@ -1,14 +1,14 @@
 import type { ComponentProps, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
-/** Figma "GF / Text input": 40px, 9px radius, 1px border, 12–13px text. */
+/** Text controls: 36px high, 8px radius, visible label above (see Field). */
 const control =
   "w-full rounded-control border border-border bg-surface px-3 text-[13px] text-ink placeholder:text-muted " +
-  "transition-colors hover:border-[#cfd5d8] focus:border-violet focus:ring-2 focus:ring-violet/15 focus:outline-none " +
+  "transition-colors hover:border-border-strong focus:border-brand focus:ring-2 focus:ring-brand/15 focus:outline-none " +
   "disabled:cursor-not-allowed disabled:bg-subtle disabled:text-secondary aria-invalid:border-red aria-invalid:ring-red/15";
 
 export function Input({ className, ...props }: ComponentProps<"input">) {
-  return <input className={cn(control, "h-10", className)} {...props} />;
+  return <input className={cn(control, "h-9", className)} {...props} />;
 }
 
 export function Textarea({ className, ...props }: ComponentProps<"textarea">) {
@@ -20,7 +20,7 @@ export function Select({ className, children, ...props }: ComponentProps<"select
     <select
       className={cn(
         control,
-        "h-10 appearance-none bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 fill=%22none%22 stroke=%22%23555f69%22 stroke-width=%221.6%22><path d=%22M3 4.5l3 3 3-3%22/></svg>')] bg-[right_12px_center] bg-no-repeat pr-9",
+        "h-9 appearance-none bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 fill=%22none%22 stroke=%22%23475569%22 stroke-width=%221.6%22><path d=%22M3 4.5l3 3 3-3%22/></svg>')] bg-[right_12px_center] bg-no-repeat pr-9",
         className,
       )}
       {...props}
@@ -53,7 +53,7 @@ export function Field({
   return (
     <div className={cn("space-y-1.5", className)}>
       <div className="flex min-h-6 items-center justify-between gap-2">
-        <label htmlFor={htmlFor} className="text-caption font-medium text-secondary">
+        <label htmlFor={htmlFor} className="text-[13px] font-medium text-ink">
           {label}
           {required && <span className="text-red"> *</span>}
         </label>

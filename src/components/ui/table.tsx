@@ -4,7 +4,7 @@ import type { ComponentProps, ReactNode } from "react";
 import { ArrowDown, ArrowUp, ArrowUpDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-/** Data table primitives, styled after Figma "Data table" on Screen 08. */
+/** Data table primitives: muted header row, hairline row dividers, horizontal scroll on small screens. */
 export function Table({ className, children, ...props }: ComponentProps<"table">) {
   return (
     // `relative` keeps visually-hidden header labels inside the scroll area.
@@ -21,7 +21,7 @@ export function Th({ className, children, ...props }: ComponentProps<"th">) {
     <th
       scope="col"
       className={cn(
-        "bg-subtle px-4 py-3 text-left text-[11px] font-semibold tracking-wide text-secondary uppercase first:rounded-l-md last:rounded-r-md",
+        "border-y border-border bg-bg px-4 py-2.5 text-left text-[12px] font-medium text-secondary first:rounded-l-md first:border-l last:rounded-r-md last:border-r",
         className,
       )}
       {...props}
@@ -49,7 +49,7 @@ export function SortableTh({
   const Icon = !active ? ArrowUpDown : dir === "asc" ? ArrowUp : ArrowDown;
   return (
     <Th className={className} aria-sort={active ? (dir === "asc" ? "ascending" : "descending") : "none"}>
-      <button type="button" onClick={onSort} className="inline-flex items-center gap-1 uppercase hover:text-ink">
+      <button type="button" onClick={onSort} className="inline-flex items-center gap-1 hover:text-ink">
         {label}
         <Icon className={cn("size-3", !active && "opacity-40")} aria-hidden />
       </button>
@@ -58,11 +58,11 @@ export function SortableTh({
 }
 
 export function Td({ className, ...props }: ComponentProps<"td">) {
-  return <td className={cn("border-b border-border px-4 py-3.5 text-ink", className)} {...props} />;
+  return <td className={cn("border-b border-border px-4 py-3 text-ink", className)} {...props} />;
 }
 
 export function Tr({ className, ...props }: ComponentProps<"tr">) {
-  return <tr className={cn("transition-colors hover:bg-[#fafbfb]", className)} {...props} />;
+  return <tr className={cn("transition-colors hover:bg-bg", className)} {...props} />;
 }
 
 export function Pagination({

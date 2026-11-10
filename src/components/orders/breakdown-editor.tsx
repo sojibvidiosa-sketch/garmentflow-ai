@@ -61,7 +61,7 @@ export function BreakdownEditor({
                   onChange={(e) => setColor(ci, e.target.value)}
                   placeholder="e.g. Navy"
                   aria-label={`Colour ${ci + 1} name`}
-                  className={cn("h-8 w-full rounded-md border border-transparent px-1.5 text-[13px] font-medium hover:border-border focus:border-violet focus:outline-none", !c.color.trim() && "border-red/40 bg-red-light/40")}
+                  className={cn("h-8 w-full rounded-md border border-transparent px-1.5 text-[13px] font-medium hover:border-border focus:border-brand focus:outline-none", !c.color.trim() && "border-red/40 bg-red-light/40")}
                 />
               </div>
               {c.sizes.map((s, si) => (
@@ -74,7 +74,7 @@ export function BreakdownEditor({
                     readOnly={readOnly}
                     onChange={(e) => setQty(ci, si, Math.max(0, Math.round(Number(e.target.value) || 0)))}
                     aria-label={`${c.color || `Colour ${ci + 1}`} ${s.size} quantity`}
-                    className="h-8 w-full rounded-md border border-transparent px-1.5 text-[13px] tabular-nums hover:border-border focus:border-violet focus:outline-none"
+                    className="h-8 w-full rounded-md border border-transparent px-1.5 text-[13px] tabular-nums hover:border-border focus:border-brand focus:outline-none"
                   />
                 </div>
               ))}
@@ -95,7 +95,7 @@ export function BreakdownEditor({
       <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
         {!readOnly ? (
           <div className="flex flex-wrap items-center gap-2">
-            <button type="button" onClick={addColor} className="inline-flex items-center gap-1 rounded-control px-2 py-1.5 text-caption font-semibold text-violet hover:bg-violet-light">
+            <button type="button" onClick={addColor} className="inline-flex items-center gap-1 rounded-control px-2 py-1.5 text-caption font-semibold text-brand-strong hover:bg-brand-light">
               <Plus className="size-3.5" /> Add colour
             </button>
             <span className="flex items-center gap-1">
@@ -105,9 +105,9 @@ export function BreakdownEditor({
                 onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addSize())}
                 placeholder="New size"
                 aria-label="New size name"
-                className="h-8 w-24 rounded-md border border-border px-2 text-caption focus:border-violet focus:outline-none"
+                className="h-8 w-24 rounded-md border border-border px-2 text-caption focus:border-brand focus:outline-none"
               />
-              <button type="button" onClick={addSize} className="inline-flex items-center gap-1 rounded-control px-2 py-1.5 text-caption font-semibold text-violet hover:bg-violet-light">
+              <button type="button" onClick={addSize} className="inline-flex items-center gap-1 rounded-control px-2 py-1.5 text-caption font-semibold text-brand-strong hover:bg-brand-light">
                 <Plus className="size-3.5" /> Add size
               </button>
             </span>

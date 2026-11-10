@@ -19,7 +19,7 @@ const REQUIRED = new Set(["buyer", "poNumber", "styleNo", "quantity", "shipDate"
 
 function confidenceBadge(f: ReviewField, value: string) {
   if (!value.trim()) return <Badge tone="red">Missing</Badge>;
-  if (value !== f.value) return <Badge tone="violet">Edited</Badge>;
+  if (value !== f.value) return <Badge tone="ai">Edited</Badge>;
   if (f.confidence >= 0.9) return <Badge tone="green">High confidence</Badge>;
   return <Badge tone="yellow">Please check</Badge>;
 }
@@ -105,7 +105,7 @@ export function ReviewWorkspace({ extraction, jobId, buyers = [] }: { extraction
     start(async () => {
       const res = await approveExtraction(jobId, toPoInput(), values.buyer ?? "", createPlan);
       if (!res.ok) return setServerError(res.error);
-      router.push(`/orders/${res.data}`);
+      router.push(`/app/orders/${res.data}`);
     });
   }
 
@@ -114,7 +114,7 @@ export function ReviewWorkspace({ extraction, jobId, buyers = [] }: { extraction
     start(async () => {
       const res = await rejectExtraction(jobId);
       if (!res.ok) return setServerError(res.error);
-      router.push("/documents");
+      router.push("/app/documents");
     });
   }
 
@@ -126,7 +126,7 @@ export function ReviewWorkspace({ extraction, jobId, buyers = [] }: { extraction
           description={extraction.fileName}
           action={
             extraction.documentUrl && (
-              <a href={extraction.documentUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-caption font-semibold text-violet hover:underline">
+              <a href={extraction.documentUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-caption font-semibold text-brand-strong hover:underline">
                 Open <ExternalLink className="size-3.5" />
               </a>
             )
@@ -229,14 +229,14 @@ export function ReviewWorkspace({ extraction, jobId, buyers = [] }: { extraction
 
           <div className="space-y-2 rounded-control border border-border bg-subtle p-3 text-[13px]">
             <label className="flex items-start gap-3">
-              <input type="checkbox" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} className="mt-0.5 size-4 accent-violet" />
+              <input type="checkbox" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} className="mt-0.5 size-4 accent-brand" />
               <span>
                 I have checked these values against the original document.
                 {showErrors && !confirmed && <span className="mt-1 block text-caption text-red">Please confirm before approving.</span>}
               </span>
             </label>
             <label className="flex items-start gap-3">
-              <input type="checkbox" checked={createPlan} onChange={(e) => setCreatePlan(e.target.checked)} className="mt-0.5 size-4 accent-violet" />
+              <input type="checkbox" checked={createPlan} onChange={(e) => setCreatePlan(e.target.checked)} className="mt-0.5 size-4 accent-brand" />
               <span>Create a T&A plan from the standard template</span>
             </label>
           </div>

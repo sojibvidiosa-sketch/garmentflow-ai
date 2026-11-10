@@ -37,7 +37,7 @@ function Meter({ label, used, limit, format = formatNumber }: { label: string; u
         <span className="font-semibold tabular-nums">{format(used)} / {format(limit)}</span>
       </div>
       <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-subtle">
-        <div className={`h-full rounded-full ${pct >= 90 ? "bg-red" : pct >= 70 ? "bg-yellow" : "bg-violet"}`} style={{ width: `${pct}%` }} />
+        <div className={`h-full rounded-full ${pct >= 90 ? "bg-red" : pct >= 70 ? "bg-yellow" : "bg-brand"}`} style={{ width: `${pct}%` }} />
       </div>
     </div>
   );

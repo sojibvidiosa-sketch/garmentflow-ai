@@ -93,7 +93,7 @@ export function DeleteOrderButton({ id, poNumber }: { id: string; poNumber: stri
                 start(async () => {
                   const res = await deletePurchaseOrder(id);
                   if (!res.ok) return setError(res.error);
-                  router.push("/orders");
+                  router.push("/app/orders");
                 })
               }
             >

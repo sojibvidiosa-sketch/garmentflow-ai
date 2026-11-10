@@ -60,7 +60,7 @@ export async function registerDocument(input: z.infer<typeof registerSchema>): P
     .select("id")
     .single();
   if (error) return dbFail(error.message, "The document could not be saved.");
-  revalidatePath("/documents");
+  revalidatePath("/app/documents");
   return { ok: true, data: data.id };
 }
 
@@ -146,7 +146,7 @@ export async function extractDocument(documentId: string): Promise<ActionResult<
       ? { type: "input_file" as const, filename: doc.file_name, file_data: `data:application/pdf;base64,${base64}` }
       : { type: "input_image" as const, image_url: `data:${doc.mime_type};base64,${base64}`, detail: "high" as const };
   const res = await runExtraction(guard.ctx, doc.id, [{ type: "input_text", text: "Extract the purchase order from this document." }, part], { fileName: doc.file_name, sourceText: "" });
-  revalidatePath("/documents");
+  revalidatePath("/app/documents");
   return res;
 }
 
@@ -226,7 +226,7 @@ export async function rejectExtraction(jobId: string): Promise<ActionResult> {
   if ("fail" in guard) return guard.fail;
   if (!z.uuid().safeParse(jobId).success) return { ok: false, error: "Unknown extraction." };
   await guard.ctx.supabase.from("extraction_results").update({ status: "rejected", reviewed_by: guard.ctx.userId, reviewed_at: new Date().toISOString() }).eq("ai_job_id", jobId);
-  revalidatePath("/documents");
+  revalidatePath("/app/documents");
   return { ok: true, message: "Extraction discarded. The document stays in the document center." };
 }
 
@@ -252,6 +252,6 @@ export async function deleteDocument(documentId: string): Promise<ActionResult> 
   await supabase.storage.from(BUCKET).remove([doc.storage_path]);
   const { error } = await supabase.from("documents").delete().eq("id", documentId);
   if (error) return dbFail(error.message, "The document could not be deleted.");
-  revalidatePath("/documents");
+  revalidatePath("/app/documents");
   return { ok: true, message: "Document deleted." };
 }

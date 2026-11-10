@@ -6,9 +6,16 @@ import { Button } from "@/components/ui/button";
 import { Notice } from "@/components/ui/states";
 import { acceptInvitation } from "@/lib/actions/team";
 import { ROLE_LABEL } from "@/lib/domain/labels";
+import type { ReactNode } from "react";
 import type { Role } from "@/lib/domain/types";
 
-export function InvitationList({ invitations }: { invitations: { id: string; companyName: string; role: Role }[] }) {
+export function InvitationList({
+  invitations,
+  footnote = "Or create a separate workspace for your own company:",
+}: {
+  invitations: { id: string; companyName: string; role: Role }[];
+  footnote?: ReactNode;
+}) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
@@ -27,7 +34,7 @@ export function InvitationList({ invitations }: { invitations: { id: string; com
               start(async () => {
                 const res = await acceptInvitation(i.id);
                 if (!res.ok) return setError(res.error);
-                router.push("/dashboard");
+                router.push("/app/dashboard");
               })
             }
           >
@@ -36,7 +43,7 @@ export function InvitationList({ invitations }: { invitations: { id: string; com
         </div>
       ))}
       {error && <Notice tone="error">{error}</Notice>}
-      <p className="pt-3 text-caption text-secondary">Or create a separate workspace for your own company:</p>
+      {footnote && <p className="pt-3 text-caption text-secondary">{footnote}</p>}
     </div>
   );
 }

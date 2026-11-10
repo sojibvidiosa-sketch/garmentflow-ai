@@ -1,143 +1,199 @@
-import { ArrowRight, BellRing, Check, ClipboardList, FileSearch, ListChecks, Mail, PieChart } from "lucide-react";
+import type { Metadata } from "next";
+import { ArrowRight, BellRing, Check, ClipboardList, FileSearch, Mail } from "lucide-react";
+import { CONTACT_EMAIL } from "@/components/layout/site-header";
+import { ContactForm } from "@/components/marketing/contact-form";
+import { ProductPreview, ReviewPreview } from "@/components/marketing/product-preview";
 import { ButtonLink } from "@/components/ui/button";
-import Link from "next/link";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
 
-const steps = ["Import buyer brief", "Review extracted fields", "Create purchase order", "Track T&A", "Report & follow up"];
+export const metadata: Metadata = {
+  title: "GarmentFlow AI — Merchandising workspace for garment buying houses",
+};
+
+const steps = [
+  { title: "Import", body: "Upload a buyer PO or tech pack, or paste the buyer email." },
+  { title: "Review", body: "Check the fields AI extracted against the source and correct them." },
+  { title: "Create the order", body: "Approve to save a structured purchase order with styles and quantities." },
+  { title: "Track T&A", body: "Milestones from fit sample to shipment, each with an owner and a date." },
+  { title: "Follow up", body: "See what is overdue, draft the follow-up email and share the report." },
+];
 
 const features = [
-  { icon: FileSearch, title: "Document reading", body: "Extract PO and tech pack details into structured fields — with the source line shown next to every value." },
-  { icon: ClipboardList, title: "Purchase orders", body: "One source of order information: styles, colour and size breakdowns, documents and history." },
-  { icon: ListChecks, title: "T&A planning", body: "Owner, deadline, status. From fit sample and lab dip to final inspection and shipment." },
-  { icon: BellRing, title: "Deadline alerts", body: "Identify tasks needing attention before they become delays. Rule-based, predictable, explainable." },
-  { icon: Mail, title: "AI email drafting", body: "Editable, professional buyer and supplier follow-ups written from approved order data." },
-  { icon: PieChart, title: "Manager reports", body: "Order-level and team-level summaries with CSV and PDF export, calculated from your verified data." },
+  {
+    icon: FileSearch,
+    ai: true,
+    title: "AI document reading",
+    body: "Extracts buyer, PO number, styles, fabric, GSM, quantities and dates from PDFs and emails. Missing values are shown as missing, never invented.",
+  },
+  {
+    icon: ClipboardList,
+    title: "Purchase order workspace",
+    body: "One record per order: items, colour and size breakdown, documents, the responsible merchandiser and a history of changes.",
+  },
+  {
+    icon: BellRing,
+    title: "T&A tracking and delay alerts",
+    body: "Alerts come from simple date rules, so they are predictable and explainable. An overdue task is flagged for you to judge, not assumed to delay shipment.",
+  },
+  {
+    icon: Mail,
+    ai: true,
+    title: "Email drafts and reports",
+    body: "Buyer and supplier follow-ups drafted from approved order data, plus order summaries for managers. You edit and send; nothing is sent automatically.",
+  },
 ];
 
 const plans = [
-  { name: "Starter", price: "৳2,499", note: "3 users · 30 active POs" },
-  { name: "Business", price: "৳5,999", note: "10 users · 150 active POs", featured: true },
-  { name: "Enterprise", price: "Custom", note: "Custom security and integrations" },
+  { name: "Starter", who: "For small teams getting organised", points: ["Purchase orders and T&A tracking", "AI document import with review", "Email drafts and order reports"] },
+  { name: "Business", who: "For growing buying houses", points: ["Everything in Starter", "More users, orders and AI usage", "Team roles and manager reports"], featured: true },
+  { name: "Enterprise", who: "For larger houses and factories", points: ["Custom limits and permissions", "Onboarding and data import help", "Integration work on request"] },
 ];
-const planFeatures = ["Purchase orders", "T&A tracking", "Human-verified AI extraction", "Email drafting & reports", "Setup assistance"];
 
-const previewRows = [
-  ["PO-2026-1058", "Lab dip approval", "28 Oct"],
-  ["PO-2026-1059", "PP sample", "01 Nov"],
-  ["PO-2026-1060", "Fabric arrival", "05 Nov"],
-  ["PO-2026-1061", "Final inspection", "11 Nov"],
-];
+const kicker = "text-caption font-medium tracking-wide text-brand-strong uppercase";
+const h2 = "mt-3 text-[28px] leading-tight font-semibold tracking-tight text-ink sm:text-[34px]";
 
 export default function LandingPage() {
-  const demoHref = "/contact";
   return (
-    <main>
-      {/* Screen 01 — hero */}
-      <section className="mx-auto grid max-w-[1320px] items-center gap-12 px-4 py-16 sm:px-8 lg:grid-cols-[minmax(0,1fr)_420px] lg:py-24 xl:grid-cols-[minmax(0,1fr)_480px]">
-        <div>
-          <p className="text-caption font-bold tracking-wider text-violet">THE MERCHANDISING WORKSPACE</p>
-          <h1 className="mt-6 text-[38px] leading-[1.08] font-semibold tracking-tight text-ink sm:text-[48px] xl:text-[54px]">
-            Every order. Every deadline.
-            <br />
-            One clear place to work.
-          </h1>
-          <p className="mt-7 max-w-[600px] text-[17px] leading-relaxed text-secondary sm:text-[18px]">
-            Turn buyer emails and tech packs into organized purchase orders. Track approvals, fabric and shipping with confidence.
-          </p>
-          <div className="mt-10 flex flex-wrap gap-3">
-            <Link href={demoHref} className="inline-flex h-11 items-center gap-2 rounded-control bg-dark px-5 text-[13px] font-semibold text-white hover:bg-dark-hover">
-              Book a live demo <ArrowRight className="size-4" />
-            </Link>
-            <ButtonLink href="/signup" variant="primary" className="h-11 px-5">
-              Start free pilot
-            </ButtonLink>
-            <ButtonLink href="/dashboard" variant="secondary" className="h-11 px-5">
-              Explore the demo
-            </ButtonLink>
+    <main id="main">
+      {/* Hero */}
+      <section className="relative overflow-hidden border-b border-border bg-bg">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-[420px] bg-[radial-gradient(60%_100%_at_50%_0%,#dbeafe_0%,transparent_70%)]" aria-hidden />
+        <div className="relative mx-auto max-w-[1200px] px-4 pt-16 sm:px-6 sm:pt-24">
+          <div className="mx-auto max-w-[760px] text-center">
+            <p className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 text-caption font-medium text-secondary">
+              <span className="size-1.5 rounded-full bg-ai" aria-hidden />
+              For garment buying houses and merchandising teams
+            </p>
+            <h1 className="mt-6 text-[36px] leading-[1.08] font-semibold tracking-tight text-ink sm:text-[52px]">
+              From buyer email to shipment, in one clear workspace.
+            </h1>
+            <p className="mx-auto mt-5 max-w-[600px] text-[16px] leading-relaxed text-secondary sm:text-[18px]">
+              GarmentFlow AI reads purchase orders and tech packs, organises them into orders your team verifies, and tracks every T&amp;A deadline until the goods ship.
+            </p>
+            <div className="mt-8 flex flex-wrap justify-center gap-3">
+              <ButtonLink href="/#contact" className="h-11 px-5 text-[14px]">
+                Book a demo <ArrowRight className="size-4" aria-hidden />
+              </ButtonLink>
+              {isSupabaseConfigured ? (
+                <ButtonLink href="/signup" variant="secondary" className="h-11 px-5 text-[14px]">Create a workspace</ButtonLink>
+              ) : (
+                <ButtonLink href="/app/dashboard" variant="secondary" className="h-11 px-5 text-[14px]">Open sample workspace</ButtonLink>
+              )}
+            </div>
           </div>
-          <p className="mt-4 text-caption text-secondary">The demo workspace uses fictional sample data.</p>
+          <div className="mx-auto mt-14 max-w-[1040px] translate-y-px">
+            <ProductPreview />
+          </div>
         </div>
+      </section>
 
-        <div className="rounded-card border border-border bg-surface p-5 shadow-pop" aria-label="Product preview (illustrative)">
-          <p className="text-[20px] font-semibold">Order command center</p>
-          <div className="mt-5 grid grid-cols-3 gap-3">
-            {[
-              ["Active orders", "128"],
-              ["On-time", "92%"],
-              ["Needs attention", "08"],
-            ].map(([label, value]) => (
-              <div key={label} className="rounded-card border border-border p-3">
-                <p className="text-[11px] font-medium text-secondary">{label}</p>
-                <p className="mt-4 text-[26px] font-semibold tabular-nums sm:text-[29px]">{value}</p>
-              </div>
-            ))}
-          </div>
-          <div className="mt-6 rounded-card border border-border p-4">
-            <p className="text-[17px] font-semibold">Shipment deadlines</p>
-            <ul className="mt-3 space-y-1">
-              {previewRows.map(([po, task, date], i) => (
-                <li key={po} className={`flex justify-between rounded-lg px-2 py-3 text-caption font-medium ${i % 2 ? "bg-subtle" : ""}`}>
-                  <span>
-                    {po} · {task}
-                  </span>
-                  <span className="text-secondary">{date}</span>
+      {/* Product overview */}
+      <section id="product" className="scroll-mt-20">
+        <div className="mx-auto grid max-w-[1200px] items-center gap-12 px-4 py-20 sm:px-6 lg:grid-cols-2 lg:py-28">
+          <div className="min-w-0">
+            <p className={kicker}>Product overview</p>
+            <h2 className={h2}>AI does the reading. Your merchandiser makes the decision.</h2>
+            <p className="mt-4 max-w-[520px] text-[15px] leading-relaxed text-secondary">
+              Buyer requirements arrive as long emails, PDFs and tech packs. GarmentFlow turns them into structured fields and shows each one for review. Nothing becomes an order until a person approves it.
+            </p>
+            <ul className="mt-7 space-y-3 text-[14px] text-ink">
+              {[
+                "Purple always marks an AI suggestion; blue marks your saved records.",
+                "Uncertain and missing values are flagged instead of guessed.",
+                "Works alongside the Excel sheets and email you already use.",
+              ].map((t) => (
+                <li key={t} className="flex gap-2.5">
+                  <Check className="mt-0.5 size-4 shrink-0 text-green" aria-hidden />
+                  {t}
                 </li>
               ))}
             </ul>
           </div>
-          <p className="mt-3 text-[11px] text-muted">Illustrative preview</p>
+          <div className="min-w-0"><ReviewPreview /></div>
         </div>
       </section>
 
-      {/* Screen 02 content — how it works */}
-      <section id="how-it-works" className="border-t border-border bg-surface">
-        <div className="mx-auto max-w-[1320px] px-4 py-16 sm:px-8">
-          <h2 className="text-[30px] font-semibold tracking-tight sm:text-[40px]">How GarmentFlow works</h2>
-          <p className="mt-3 text-[15px] text-secondary">From document intake to follow-up, in five steps. A merchandiser approves every AI suggestion.</p>
-          <ol className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-            {steps.map((step, i) => (
-              <li key={step} className="rounded-card border border-border bg-bg p-4">
-                <p className="text-caption font-semibold text-violet">0{i + 1}</p>
-                <p className="mt-3 text-[13px] font-semibold">{step}</p>
+      {/* How it works */}
+      <section id="how-it-works" className="scroll-mt-20 border-y border-border bg-bg">
+        <div className="mx-auto max-w-[1200px] px-4 py-20 sm:px-6 lg:py-24">
+          <p className={kicker}>How it works</p>
+          <h2 className={h2}>Five steps from document to follow-up</h2>
+          <ol className="mt-12 grid gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-5">
+            {steps.map((s, i) => (
+              <li key={s.title} className="relative border-t-2 border-border pt-5 first:border-brand">
+                <span className="text-caption font-semibold text-brand-strong tabular-nums">Step {i + 1}</span>
+                <h3 className="mt-2 text-[15px] font-semibold text-ink">{s.title}</h3>
+                <p className="mt-1.5 text-[13px] leading-relaxed text-secondary">{s.body}</p>
               </li>
             ))}
           </ol>
-          <div id="features" className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {features.map(({ icon: Icon, title, body }) => (
-              <div key={title} className="rounded-card border border-border p-6">
-                <div className="grid size-10 place-items-center rounded-control bg-violet-light text-violet">
+        </div>
+      </section>
+
+      {/* Features */}
+      <section id="features" className="scroll-mt-20">
+        <div className="mx-auto max-w-[1200px] px-4 py-20 sm:px-6 lg:py-28">
+          <p className={kicker}>Features</p>
+          <h2 className={h2}>Four tools that cover a merchandiser&apos;s day</h2>
+          <div className="mt-12 grid overflow-hidden rounded-[14px] border border-border sm:grid-cols-2">
+            {features.map(({ icon: Icon, title, body, ai }, i) => (
+              <div key={title} className={`p-7 sm:p-9 ${i > 0 ? "border-t border-border" : ""} ${i === 1 ? "sm:border-t-0" : ""} ${i % 2 === 1 ? "sm:border-l" : ""}`}>
+                <span className={`grid size-10 place-items-center rounded-control ${ai ? "bg-ai-light text-ai-strong" : "bg-brand-light text-brand-strong"}`}>
                   <Icon className="size-5" aria-hidden />
-                </div>
-                <h3 className="mt-5 text-[18px] font-semibold">{title}</h3>
-                <p className="mt-2 text-[13px] leading-relaxed text-secondary">{body}</p>
+                </span>
+                <h3 className="mt-5 text-[17px] font-semibold text-ink">{title}</h3>
+                <p className="mt-2 max-w-[440px] text-[14px] leading-relaxed text-secondary">{body}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Screen 03 content — pricing */}
-      <section id="pricing" className="mx-auto max-w-[1320px] px-4 py-16 sm:px-8">
-        <h2 className="text-[30px] font-semibold tracking-tight sm:text-[40px]">Simple pricing that grows with you</h2>
-        <p className="mt-3 text-[13px] text-secondary">Pilot pricing shown for discussion. Final pricing is confirmed during onboarding.</p>
-        <div className="mt-10 grid gap-4 lg:grid-cols-3">
-          {plans.map((plan) => (
-            <div key={plan.name} className={`flex flex-col rounded-card border bg-surface p-6 ${plan.featured ? "border-violet shadow-pop" : "border-border"}`}>
-              <p className="text-[20px] font-semibold">{plan.name}</p>
-              <p className="mt-6 text-[40px] font-semibold tracking-tight">{plan.price}</p>
-              <p className="text-caption text-secondary">{plan.price === "Custom" ? "Talk to us" : "per month"}</p>
-              <p className="mt-6 text-[13px] font-medium">{plan.note}</p>
-              <ul className="mt-6 flex-1 space-y-3">
-                {planFeatures.map((f) => (
-                  <li key={f} className="flex items-center gap-2 text-[13px] text-secondary">
-                    <Check className="size-4 text-green" aria-hidden /> {f}
-                  </li>
-                ))}
-              </ul>
-              <Link href={demoHref} className={`mt-8 inline-flex h-10 items-center justify-center rounded-control text-[13px] font-semibold ${plan.featured ? "bg-violet text-white hover:bg-violet-hover" : "border border-border hover:bg-subtle"}`}>
-                Request demo
-              </Link>
-            </div>
-          ))}
+      {/* Pricing */}
+      <section id="pricing" className="scroll-mt-20 border-y border-border bg-bg">
+        <div className="mx-auto max-w-[1200px] px-4 py-20 sm:px-6 lg:py-24">
+          <p className={kicker}>Pricing</p>
+          <h2 className={h2}>Plans sized for your team</h2>
+          <p className="mt-3 max-w-[560px] text-[15px] leading-relaxed text-secondary">
+            We are onboarding pilot companies now. Pricing is shared on request and confirmed with you before any subscription starts.
+          </p>
+          <div className="mt-10 grid gap-5 lg:grid-cols-3">
+            {plans.map((p) => (
+              <div key={p.name} className={`flex flex-col rounded-card border bg-surface p-6 ${p.featured ? "border-brand ring-1 ring-brand" : "border-border"}`}>
+                <h3 className="text-[16px] font-semibold text-ink">{p.name}</h3>
+                <p className="mt-1 text-[13px] text-secondary">{p.who}</p>
+                <p className="mt-5 text-[22px] font-semibold tracking-tight text-ink">Pricing on request</p>
+                <ul className="mt-5 flex-1 space-y-2.5 border-t border-border pt-5">
+                  {p.points.map((pt) => (
+                    <li key={pt} className="flex gap-2.5 text-[13px] text-secondary">
+                      <Check className="mt-0.5 size-4 shrink-0 text-green" aria-hidden />
+                      {pt}
+                    </li>
+                  ))}
+                </ul>
+                <ButtonLink href="/#contact" variant={p.featured ? "primary" : "secondary"} className="mt-7 w-full">Contact sales</ButtonLink>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section id="contact" className="scroll-mt-20">
+        <div className="mx-auto grid max-w-[1200px] items-start gap-12 px-4 py-20 sm:px-6 lg:grid-cols-[1fr_1.05fr] lg:py-28">
+          <div className="lg:pt-6">
+            <p className={kicker}>Book a demo</p>
+            <h2 className={h2}>See it with documents like yours.</h2>
+            <p className="mt-4 max-w-[480px] text-[15px] leading-relaxed text-secondary">
+              Tell us about your team and we will walk you through the workflow, in English or Bangla, and set up a pilot workspace.
+            </p>
+            <p className="mt-6 text-[13px] text-secondary">
+              Prefer email? <a href={`mailto:${CONTACT_EMAIL}`} className="font-medium text-brand-strong hover:underline">{CONTACT_EMAIL}</a>
+            </p>
+          </div>
+          <div className="rounded-[14px] border border-border bg-surface p-6 shadow-card sm:p-8">
+            <ContactForm contactEmail={CONTACT_EMAIL} />
+          </div>
         </div>
       </section>
     </main>

@@ -12,7 +12,7 @@ export function NewPasswordForm() {
   const [state, action, pending] = useActionState<FormState, FormData>(updatePassword, {});
   const fe = state.fieldErrors ?? {};
   return (
-    <form action={action} noValidate className="mt-10 space-y-5">
+    <form action={action} noValidate className="mt-8 space-y-5">
       <Field label="New password" htmlFor="password" error={fe.password} hint="At least 8 characters.">
         <PasswordInput id="password" name="password" autoComplete="new-password" error={fe.password} />
       </Field>

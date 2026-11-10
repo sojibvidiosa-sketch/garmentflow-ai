@@ -64,7 +64,7 @@ export function DocumentCenter({ documents, orders, canDelete }: { documents: Do
       const res = await extractDocument(doc.id);
       setBusyId(null);
       if (!res.ok) return setMessage({ ok: false, text: res.error });
-      router.push(`/orders/review/${res.data}`);
+      router.push(`/app/import/review/${res.data}`);
     });
   }
 
@@ -131,7 +131,7 @@ export function DocumentCenter({ documents, orders, canDelete }: { documents: Do
                 <Tr key={d.id}>
                   <Td>
                     <span className="flex items-center gap-2.5">
-                      {d.fileName.toLowerCase().endsWith(".pdf") ? <FileText className="size-4 shrink-0 text-violet" /> : <ImageIcon className="size-4 shrink-0 text-violet" />}
+                      {d.fileName.toLowerCase().endsWith(".pdf") ? <FileText className="size-4 shrink-0 text-brand-strong" /> : <ImageIcon className="size-4 shrink-0 text-brand-strong" />}
                       <span className="min-w-0">
                         <span className="block max-w-[260px] truncate font-medium">{d.fileName}</span>
                         <span className="text-caption text-secondary">{formatBytes(d.sizeBytes)}</span>
@@ -139,12 +139,12 @@ export function DocumentCenter({ documents, orders, canDelete }: { documents: Do
                     </span>
                   </Td>
                   <Td>{KIND_LABEL[d.kind]}</Td>
-                  <Td>{d.poId ? <Link href={`/orders/${d.poId}`} className="font-medium text-violet hover:underline">{d.poNumber}</Link> : <span className="text-secondary">Not linked</span>}</Td>
+                  <Td>{d.poId ? <Link href={`/app/orders/${d.poId}`} className="font-medium text-brand-strong hover:underline">{d.poNumber}</Link> : <span className="text-secondary">Not linked</span>}</Td>
                   <Td>
                     {d.extraction?.status === "approved" ? (
                       <Badge tone="green">Approved</Badge>
                     ) : d.extraction?.status === "needs_review" ? (
-                      <Link href={`/orders/review/${d.extraction.jobId}`}><Badge tone="yellow">Needs review</Badge></Link>
+                      <Link href={`/app/import/review/${d.extraction.jobId}`}><Badge tone="yellow">Needs review</Badge></Link>
                     ) : d.lastJobFailed ? (
                       <Badge tone="red">Failed</Badge>
                     ) : (
@@ -157,7 +157,7 @@ export function DocumentCenter({ documents, orders, canDelete }: { documents: Do
                   </Td>
                   <Td>
                     <div className="flex justify-end gap-1">
-                      {busyId === d.id && <Loader2 className="m-1.5 size-4 animate-spin text-violet" />}
+                      {busyId === d.id && <Loader2 className="m-1.5 size-4 animate-spin text-brand-strong" />}
                       {!d.extraction && (d.kind === "purchase_order" || d.kind === "tech_pack") && (
                         <Button variant="ghost" size="sm" icon={<Sparkles className="size-3.5" />} onClick={() => extract(d)} disabled={pending}>Read with AI</Button>
                       )}
@@ -191,7 +191,7 @@ export function DocumentCenter({ documents, orders, canDelete }: { documents: Do
       >
         <div className="space-y-4">
           <div className="flex items-center gap-3 rounded-control border border-dashed border-border bg-subtle p-4">
-            <UploadCloud className="size-5 text-violet" />
+            <UploadCloud className="size-5 text-brand-strong" />
             <span className="min-w-0 flex-1 truncate text-[13px] text-ink">{file ? `${file.name} · ${formatBytes(file.size)}` : "PDF, PNG or JPEG · up to 10 MB"}</span>
             <Button variant="secondary" size="sm" onClick={() => inputRef.current?.click()}>Choose file</Button>
             <input
@@ -223,7 +223,7 @@ export function DocumentCenter({ documents, orders, canDelete }: { documents: Do
               </Select>
             </Field>
           </div>
-          {uploader.stage === "uploading" && <p className="text-caption text-violet">Uploading…</p>}
+          {uploader.stage === "uploading" && <p className="text-caption text-brand-strong">Uploading…</p>}
           {fileError && <Notice tone="error">{fileError}</Notice>}
         </div>
       </Modal>
