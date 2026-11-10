@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Suspense, useState, type ReactNode } from "react";
 import {
+  ArrowLeftRight,
   BarChart3,
   Bell,
   Building2,
@@ -11,19 +12,20 @@ import {
   Cpu,
   CreditCard,
   FileStack,
-  FileText,
   LayoutDashboard,
+  LifeBuoy,
   ListChecks,
-  Mail,
   LogOut,
+  Mail,
   Menu,
   Search,
   Settings,
-  ShieldCheck,
+  Sparkles,
   SquareCheckBig,
   TriangleAlert,
   Users,
   UsersRound,
+  Workflow,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -31,90 +33,157 @@ import { Logo } from "./logo";
 import { signOut } from "@/lib/actions/auth";
 import { cn, initials } from "@/lib/utils";
 
+export type Area = "workspace" | "office" | "admin";
+
 interface NavItem {
   label: string;
   href: string;
   icon: LucideIcon;
-  /** Screen number in the Figma file. */
-  screen: string;
+  /** Purple icon: the screen is driven by AI suggestions. */
+  ai?: boolean;
+}
+interface NavGroup {
+  label: string;
+  items: NavItem[];
 }
 
-const NAV: Record<"workspace" | "admin", NavItem[]> = {
+/** Only screens that exist are listed; new ones are added here as they ship. */
+const NAV: Record<Area, NavGroup[]> = {
   workspace: [
-    { label: "Overview", href: "/dashboard", icon: LayoutDashboard, screen: "07" },
-    { label: "Purchase Orders", href: "/orders", icon: ClipboardList, screen: "08" },
-    { label: "New Order / Upload", href: "/orders/new", icon: FileText, screen: "09" },
-    { label: "Documents", href: "/documents", icon: FileStack, screen: "12" },
-    { label: "T&A Tracker", href: "/tna", icon: ListChecks, screen: "13" },
-    { label: "My Tasks", href: "/tasks", icon: SquareCheckBig, screen: "14" },
-    { label: "Delay Alerts", href: "/alerts", icon: TriangleAlert, screen: "15" },
-    { label: "Buyers", href: "/buyers", icon: UsersRound, screen: "16" },
-    { label: "Email Assistant", href: "/email", icon: Mail, screen: "17" },
-    { label: "Reports", href: "/reports", icon: BarChart3, screen: "18" },
-    { label: "Team", href: "/team", icon: Users, screen: "19" },
-    { label: "Settings", href: "/settings", icon: Settings, screen: "20" },
+    {
+      label: "Orders",
+      items: [
+        { label: "Dashboard", href: "/app/dashboard", icon: LayoutDashboard },
+        { label: "Purchase orders", href: "/app/orders", icon: ClipboardList },
+        { label: "Import with AI", href: "/app/import", icon: Sparkles, ai: true },
+        { label: "Documents", href: "/app/documents", icon: FileStack },
+      ],
+    },
+    {
+      label: "Planning",
+      items: [
+        { label: "T&A tracker", href: "/app/tna", icon: ListChecks },
+        { label: "My tasks", href: "/app/tasks", icon: SquareCheckBig },
+        { label: "Delay alerts", href: "/app/alerts", icon: TriangleAlert },
+      ],
+    },
+    {
+      label: "Communication",
+      items: [
+        { label: "Buyers", href: "/app/buyers", icon: UsersRound },
+        { label: "Email assistant", href: "/app/email", icon: Mail, ai: true },
+        { label: "Reports", href: "/app/reports", icon: BarChart3 },
+      ],
+    },
+  ],
+  office: [
+    {
+      label: "Company",
+      items: [
+        { label: "Team", href: "/office/team", icon: Users },
+        { label: "Settings", href: "/office/settings", icon: Settings },
+      ],
+    },
   ],
   admin: [
-    { label: "Overview", href: "/admin", icon: ShieldCheck, screen: "21" },
-    { label: "Companies", href: "/admin/companies", icon: Building2, screen: "22" },
-    { label: "Subscriptions", href: "/admin/subscriptions", icon: CreditCard, screen: "23" },
-    { label: "AI Usage", href: "/admin/ai-usage", icon: Cpu, screen: "24" },
-    { label: "Processing Jobs", href: "/admin/jobs", icon: FileStack, screen: "25" },
-    { label: "Support & Logs", href: "/admin/support", icon: ClipboardList, screen: "26" },
+    {
+      label: "Platform",
+      items: [
+        { label: "Overview", href: "/admin", icon: LayoutDashboard },
+        { label: "Companies", href: "/admin/companies", icon: Building2 },
+        { label: "Subscriptions", href: "/admin/subscriptions", icon: CreditCard },
+      ],
+    },
+    {
+      label: "Operations",
+      items: [
+        { label: "AI usage", href: "/admin/ai-usage", icon: Cpu },
+        { label: "Processing jobs", href: "/admin/jobs", icon: Workflow },
+        { label: "Support & logs", href: "/admin/support", icon: LifeBuoy },
+      ],
+    },
   ],
 };
 
+const AREA_LABEL: Record<Area, string> = { workspace: "Workspace", office: "Office admin", admin: "Platform admin" };
+const HOME: Record<Area, string> = { workspace: "/app/dashboard", office: "/office/team", admin: "/admin" };
+
 function isActive(pathname: string, href: string) {
-  if (href === "/orders") return pathname === "/orders" || /^\/orders\/(?!new)/.test(pathname);
   if (href === "/admin") return pathname === "/admin";
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-function NavLinks({ items, pathname, onNavigate }: { items: NavItem[]; pathname: string | null; onNavigate?: () => void }) {
-  return items.map(({ label, href, icon: Icon }) => {
-    const active = pathname !== null && isActive(pathname, href);
-    return (
-      <Link
-        key={label}
-        href={href}
-        onClick={onNavigate}
-        aria-current={active ? "page" : undefined}
-        className={cn(
-          "flex h-10 items-center gap-3 rounded-control px-3.5 text-[13px] transition-colors",
-          active ? "bg-violet-light font-semibold text-violet" : "text-secondary hover:bg-subtle hover:text-ink",
-        )}
-      >
-        <Icon className={cn("size-4", active ? "text-violet" : "text-muted")} aria-hidden />
-        {label}
-      </Link>
-    );
-  });
+function NavLinks({ groups, pathname, onNavigate }: { groups: NavGroup[]; pathname: string | null; onNavigate?: () => void }) {
+  return groups.map((group) => (
+    <div key={group.label}>
+      <p className="px-2.5 pb-1.5 text-[11px] font-medium tracking-wide text-muted uppercase">{group.label}</p>
+      <ul className="space-y-px">
+        {group.items.map(({ label, href, icon: Icon, ai }) => {
+          const active = pathname !== null && isActive(pathname, href);
+          return (
+            <li key={href}>
+              <Link
+                href={href}
+                onClick={onNavigate}
+                aria-current={active ? "page" : undefined}
+                className={cn(
+                  "flex h-9 items-center gap-2.5 rounded-control px-2.5 text-[13px] transition-colors",
+                  active ? "bg-brand-light font-medium text-brand-strong" : "text-secondary hover:bg-subtle hover:text-ink",
+                )}
+              >
+                <Icon className={cn("size-4 shrink-0", ai ? "text-ai" : active ? "text-brand-strong" : "text-muted")} aria-hidden />
+                {label}
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  ));
 }
 
 /** Reads the current URL, so it must render inside <Suspense> (Next.js Cache Components). */
-function ActiveNavLinks(props: { items: NavItem[]; onNavigate?: () => void }) {
+function ActiveNavLinks(props: { groups: NavGroup[]; onNavigate?: () => void }) {
   return <NavLinks {...props} pathname={usePathname()} />;
 }
 
-function Sidebar({ area, companyName, onNavigate }: { area: "workspace" | "admin"; companyName: string; onNavigate?: () => void }) {
-  const items = NAV[area];
-
+function Sidebar({
+  area,
+  companyName,
+  switchTo,
+  onNavigate,
+}: {
+  area: Area;
+  companyName: string;
+  switchTo?: { label: string; href: string };
+  onNavigate?: () => void;
+}) {
+  const groups = NAV[area];
   return (
     <div className="flex h-full flex-col">
-      <div className="flex h-[77px] items-center px-6">
-        <Logo href={area === "admin" ? "/admin" : "/dashboard"} suffix={area === "admin" ? " Admin" : ""} />
+      <div className="flex h-14 items-center px-4">
+        <Logo href={HOME[area]} />
       </div>
-      <div className="mx-[18px] h-px bg-border" />
-      <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-4" aria-label="Main">
-        <Suspense fallback={<NavLinks items={items} pathname={null} />}>
-          <ActiveNavLinks items={items} onNavigate={onNavigate} />
+      <div className="mx-3 flex items-center gap-2.5 rounded-control border border-border bg-bg px-2.5 py-2">
+        <span className="grid size-7 shrink-0 place-items-center rounded-md bg-ink text-[10px] font-semibold text-white">{initials(companyName)}</span>
+        <span className="min-w-0 leading-tight">
+          <span className="block truncate text-[13px] font-medium text-ink">{companyName}</span>
+          <span className="block text-[11px] text-muted">{AREA_LABEL[area]}</span>
+        </span>
+      </div>
+      <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-5" aria-label="Main">
+        <Suspense fallback={<NavLinks groups={groups} pathname={null} />}>
+          <ActiveNavLinks groups={groups} onNavigate={onNavigate} />
         </Suspense>
       </nav>
-      <div className="mx-[18px] h-px bg-border" />
-      <div className="flex items-center gap-2.5 px-6 py-5 text-caption font-medium text-ink">
-        <span className="grid size-6 place-items-center rounded-full bg-ink text-[10px] text-white">{initials(companyName)}</span>
-        <span className="truncate">{companyName}</span>
-      </div>
+      {switchTo && (
+        <div className="border-t border-border p-3">
+          <Link href={switchTo.href} onClick={onNavigate} className="flex h-9 items-center gap-2.5 rounded-control px-2.5 text-[13px] text-secondary hover:bg-subtle hover:text-ink">
+            <ArrowLeftRight className="size-4 text-muted" aria-hidden />
+            {switchTo.label}
+          </Link>
+        </div>
+      )}
     </div>
   );
 }
@@ -126,73 +195,83 @@ export function AppShell({
   userRole,
   alertCount,
   canSignOut,
+  switchTo,
   children,
 }: {
-  area: "workspace" | "admin";
+  area: Area;
   companyName: string;
   userName: string;
   userRole: string;
   alertCount?: number;
   /** Live mode only — the demo has no session to end. */
   canSignOut?: boolean;
+  /** Link to another area the user may open (e.g. Office admin for managers). */
+  switchTo?: { label: string; href: string };
   children: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-bg lg:pl-[235px]">
-      <aside className="no-print fixed inset-y-0 left-0 z-30 hidden w-[235px] border-r border-border bg-surface lg:block">
-        <Sidebar area={area} companyName={companyName} />
+    <div className="min-h-screen bg-bg lg:pl-[240px]">
+      <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-control focus:bg-surface focus:px-3 focus:py-2 focus:text-[13px] focus:shadow-pop">
+        Skip to content
+      </a>
+      <aside className="no-print fixed inset-y-0 left-0 z-30 hidden w-[240px] border-r border-border bg-surface lg:block">
+        <Sidebar area={area} companyName={companyName} switchTo={switchTo} />
       </aside>
 
       {open && (
         <div className="no-print fixed inset-0 z-40 lg:hidden" role="dialog" aria-modal="true" aria-label="Navigation">
-          <button type="button" className="absolute inset-0 bg-ink/30" onClick={() => setOpen(false)} aria-label="Close navigation" />
-          <aside className="relative h-full w-[260px] max-w-[85vw] bg-surface shadow-pop">
-            <button type="button" onClick={() => setOpen(false)} className="absolute top-6 right-3 rounded-md p-1.5 text-secondary hover:bg-subtle" aria-label="Close navigation">
+          <button type="button" className="absolute inset-0 bg-ink/40" onClick={() => setOpen(false)} aria-label="Close navigation" />
+          <aside className="relative h-full w-[272px] max-w-[85vw] bg-surface shadow-pop">
+            <button type="button" onClick={() => setOpen(false)} className="absolute top-3 right-3 grid size-8 place-items-center rounded-control text-secondary hover:bg-subtle" aria-label="Close navigation">
               <X className="size-4" />
             </button>
-            <Sidebar area={area} companyName={companyName} onNavigate={() => setOpen(false)} />
+            <Sidebar area={area} companyName={companyName} switchTo={switchTo} onNavigate={() => setOpen(false)} />
           </aside>
         </div>
       )}
 
-      <header className="no-print sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-border bg-surface/95 px-4 backdrop-blur sm:px-8 lg:h-[77px]">
-        <button type="button" className="-ml-1 rounded-md p-2 text-secondary hover:bg-subtle lg:hidden" onClick={() => setOpen(true)} aria-label="Open navigation">
+      <header className="no-print sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-border bg-surface/95 px-4 backdrop-blur sm:px-6">
+        <button type="button" className="-ml-1 grid size-9 place-items-center rounded-control text-secondary hover:bg-subtle lg:hidden" onClick={() => setOpen(true)} aria-label="Open navigation">
           <Menu className="size-5" />
         </button>
-        <form action={`${process.env.NEXT_PUBLIC_BASE_PATH}/orders/`} className="relative hidden max-w-md flex-1 sm:block" role="search">
-          <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted" aria-hidden />
-          <input
-            name="q"
-            type="search"
-            placeholder="Search PO number, buyer or style…"
-            aria-label="Search purchase orders"
-            className="h-9 w-full rounded-control border border-transparent bg-bg pr-3 pl-9 text-[13px] placeholder:text-muted focus:border-violet focus:bg-surface focus:outline-none"
-          />
-        </form>
-        <div className="ml-auto flex items-center gap-2 sm:gap-4">
+        {area === "workspace" ? (
+          <form action={`${process.env.NEXT_PUBLIC_BASE_PATH}/app/orders/`} className="relative hidden max-w-sm flex-1 sm:block" role="search">
+            <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted" aria-hidden />
+            <input
+              name="q"
+              type="search"
+              placeholder="Search PO number, buyer or style"
+              aria-label="Search purchase orders"
+              className="h-9 w-full rounded-control border border-border bg-bg pr-3 pl-9 text-[13px] placeholder:text-muted focus:border-brand focus:bg-surface focus:ring-2 focus:ring-brand/15 focus:outline-none"
+            />
+          </form>
+        ) : (
+          <p className="text-[13px] font-medium text-secondary">{AREA_LABEL[area]}</p>
+        )}
+        <div className="ml-auto flex items-center gap-1 sm:gap-2">
           {area === "workspace" && (
-            <Link href="/alerts" className="relative flex items-center gap-2 rounded-control px-2.5 py-2 text-caption font-medium text-secondary hover:bg-subtle">
-              <Bell className="size-4" aria-hidden />
-              <span className="hidden sm:inline">Notifications</span>
+            <Link href="/app/alerts" className="relative grid size-9 place-items-center rounded-control text-secondary hover:bg-subtle hover:text-ink" aria-label={alertCount ? `Delay alerts, ${alertCount} unread` : "Delay alerts"}>
+              <Bell className="size-[18px]" aria-hidden />
               {!!alertCount && (
-                <span className="grid h-[18px] min-w-[18px] place-items-center rounded-full bg-red px-1 text-[10px] font-semibold text-white" aria-label={`${alertCount} alerts`}>
-                  {alertCount}
+                <span className="absolute -top-0.5 -right-0.5 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-red px-1 text-[10px] font-semibold text-white ring-2 ring-surface" aria-hidden>
+                  {alertCount > 99 ? "99+" : alertCount}
                 </span>
               )}
             </Link>
           )}
+          <div className="mx-1 hidden h-6 w-px bg-border sm:block" />
           <div className="flex items-center gap-2.5">
-            <span className="grid size-8 place-items-center rounded-full bg-violet-light text-[11px] font-semibold text-violet">{initials(userName)}</span>
+            <span className="grid size-8 place-items-center rounded-full bg-brand-light text-[11px] font-semibold text-brand-strong">{initials(userName)}</span>
             <div className="hidden leading-tight sm:block">
-              <p className="text-caption font-semibold text-ink">{userName}</p>
-              <p className="text-[11px] text-secondary">{userRole}</p>
+              <p className="text-[13px] font-medium text-ink">{userName}</p>
+              <p className="text-[11px] text-muted">{userRole}</p>
             </div>
           </div>
           {canSignOut && (
             <form action={signOut}>
-              <button type="submit" className="rounded-control p-2 text-secondary hover:bg-subtle hover:text-ink" aria-label="Sign out" title="Sign out">
+              <button type="submit" className="grid size-9 place-items-center rounded-control text-secondary hover:bg-subtle hover:text-ink" aria-label="Sign out" title="Sign out">
                 <LogOut className="size-4" />
               </button>
             </form>
@@ -200,7 +279,9 @@ export function AppShell({
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-[1280px] px-4 py-6 sm:px-8 sm:py-8">{children}</main>
+      <main id="main" className="mx-auto w-full max-w-[1280px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+        {children}
+      </main>
     </div>
   );
 }

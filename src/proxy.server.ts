@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { isSupabaseConfigured, SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "@/lib/supabase/config";
 
-const PROTECTED = ["/dashboard", "/orders", "/tna", "/alerts", "/email", "/reports", "/admin", "/onboarding"];
+const PROTECTED = ["/app", "/office", "/admin", "/onboarding"];
 
 /**
  * Refreshes the Supabase session cookie and sends signed-out visitors to
@@ -37,7 +37,8 @@ export async function proxy(request: NextRequest) {
   }
   if (signedIn && (path === "/login" || path === "/signup")) {
     const url = request.nextUrl.clone();
-    url.pathname = "/dashboard";
+    const next = request.nextUrl.searchParams.get("next") ?? "";
+    url.pathname = next.startsWith("/") && !next.startsWith("//") ? next : "/app/dashboard";
     url.search = "";
     return NextResponse.redirect(url);
   }

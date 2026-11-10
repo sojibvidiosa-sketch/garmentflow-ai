@@ -13,18 +13,10 @@ export function SignupForm({ enabled }: { enabled: boolean }) {
   const [state, action, pending] = useActionState<FormState, FormData>(signUp, {});
   const fe = state.fieldErrors ?? {};
 
-  if (state.message) {
-    return (
-      <Notice tone="success" title="Check your email" className="mt-10">
-        {state.message}
-      </Notice>
-    );
-  }
-
   return (
-    <form action={action} noValidate className="mt-10 space-y-5">
+    <form action={action} noValidate className="mt-8 space-y-5">
       <Field label="Your full name" htmlFor="fullName" error={fe.fullName}>
-        <Input id="fullName" name="fullName" autoComplete="name" placeholder="Sarah Khan" aria-invalid={!!fe.fullName} />
+        <Input id="fullName" name="fullName" autoComplete="name" placeholder="Your name" aria-invalid={!!fe.fullName} />
       </Field>
       <Field label="Buying house name" htmlFor="companyName" error={fe.companyName}>
         <Input id="companyName" name="companyName" autoComplete="organization" placeholder="Your company Ltd." aria-invalid={!!fe.companyName} />
@@ -38,8 +30,11 @@ export function SignupForm({ enabled }: { enabled: boolean }) {
       {!enabled && <Notice tone="warning" title="Sign-up is not connected on this demo site" />}
       {state.error && enabled && <Notice tone="error">{state.error}</Notice>}
       <Button type="submit" className="w-full" loading={pending} disabled={!enabled}>Create workspace</Button>
-      <p className="text-caption text-secondary">
-        Already have an account? <Link href="/login" className="font-medium text-violet hover:underline">Sign in</Link>
+      <p className="text-caption leading-relaxed text-muted">
+        By creating a workspace you agree to the <Link href="/terms" className="underline hover:text-ink">Terms</Link> and <Link href="/privacy" className="underline hover:text-ink">Privacy notice</Link>.
+      </p>
+      <p className="text-[13px] text-secondary">
+        Already have an account? <Link href="/login" className="font-medium text-brand-strong hover:underline">Sign in</Link>
       </p>
     </form>
   );

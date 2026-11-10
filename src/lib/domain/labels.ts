@@ -1,6 +1,6 @@
 import type { MilestoneKey, MilestoneStatus, PoStatus, Priority, Role } from "./types";
 
-export type Tone = "neutral" | "violet" | "green" | "yellow" | "red" | "blue";
+export type Tone = "neutral" | "brand" | "ai" | "green" | "yellow" | "red" | "blue";
 
 /** Default garment T&A template, in execution order. */
 export const MILESTONE_ORDER: MilestoneKey[] = [
@@ -42,7 +42,7 @@ export const MILESTONE_SHORT: Record<MilestoneKey, string> = {
 export const PO_STATUS: Record<PoStatus, { label: string; tone: Tone }> = {
   draft: { label: "Draft", tone: "neutral" },
   pending_review: { label: "Pending review", tone: "yellow" },
-  confirmed: { label: "Confirmed", tone: "violet" },
+  confirmed: { label: "Confirmed", tone: "brand" },
   in_production: { label: "In production", tone: "blue" },
   shipped: { label: "Shipped", tone: "green" },
   cancelled: { label: "Cancelled", tone: "red" },

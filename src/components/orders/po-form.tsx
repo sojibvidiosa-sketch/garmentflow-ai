@@ -48,7 +48,7 @@ export function PoForm({ initial, buyers, members, isNew }: { initial: PoInput; 
         return;
       }
       setResult({ tone: res.message?.includes("could not") ? "warning" : "success", text: res.message ?? "Saved." });
-      router.push(`/orders/${res.data}`);
+      router.push(`/app/orders/${res.data}`);
     });
   }
 
@@ -69,7 +69,7 @@ export function PoForm({ initial, buyers, members, isNew }: { initial: PoInput; 
           <Field label="PO number" htmlFor="poNumber" required error={err("poNumber")}>
             <Input id="poNumber" value={po.poNumber} onChange={(e) => set("poNumber", e.target.value)} placeholder="PO-2026-1101" aria-invalid={!!err("poNumber")} />
           </Field>
-          <Field label="Buyer" htmlFor="buyerId" hint={<Link href="/buyers" className="text-violet hover:underline">Manage buyers</Link>}>
+          <Field label="Buyer" htmlFor="buyerId" hint={<Link href="/app/buyers" className="text-brand-strong hover:underline">Manage buyers</Link>}>
             <Select id="buyerId" value={po.buyerId} onChange={(e) => set("buyerId", e.target.value)}>
               <option value="">Select buyer…</option>
               {buyers.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
@@ -172,7 +172,7 @@ export function PoForm({ initial, buyers, members, isNew }: { initial: PoInput; 
       <div className="flex flex-wrap items-center justify-between gap-3">
         {isNew ? (
           <label className="flex items-center gap-2 text-[13px]">
-            <input type="checkbox" checked={createPlan} onChange={(e) => setCreatePlan(e.target.checked)} className="size-4 accent-violet" />
+            <input type="checkbox" checked={createPlan} onChange={(e) => setCreatePlan(e.target.checked)} className="size-4 accent-brand" />
             Create a T&A plan from the standard template (dates stay editable)
           </label>
         ) : (

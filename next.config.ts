@@ -18,6 +18,22 @@ const nextConfig: NextConfig = {
   // Security headers for the server deployment (static hosting cannot set headers).
   ...(!staticDemo && {
     poweredByHeader: false,
+    // Addresses used before the /app, /office and /admin structure keep working.
+    async redirects() {
+      const moved = ["dashboard", "orders", "documents", "tna", "tasks", "alerts", "buyers", "email", "reports"];
+      return [
+        { source: "/orders/new", destination: "/app/import", permanent: true },
+        { source: "/orders/create", destination: "/app/orders/new/manual", permanent: true },
+        { source: "/orders/review/:id", destination: "/app/import/review/:id", permanent: true },
+        ...moved.flatMap((p) => [
+          { source: `/${p}`, destination: `/app/${p}`, permanent: true },
+          { source: `/${p}/:path*`, destination: `/app/${p}/:path*`, permanent: true },
+        ]),
+        { source: "/team", destination: "/office/team", permanent: true },
+        { source: "/settings", destination: "/office/settings", permanent: true },
+        { source: "/contact", destination: "/#contact", permanent: true },
+      ];
+    },
     async headers() {
       return [
         {

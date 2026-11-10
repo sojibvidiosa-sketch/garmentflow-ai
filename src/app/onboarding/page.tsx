@@ -11,13 +11,13 @@ import { isSupabaseConfigured } from "@/lib/supabase/config";
 export const metadata: Metadata = { title: "Set up your workspace" };
 
 async function Onboarding() {
-  if (!isSupabaseConfigured) redirect("/dashboard");
+  if (!isSupabaseConfigured) redirect("/app/dashboard");
   const { createClient } = await import("@/lib/supabase/server");
   const supabase = await createClient();
   const { data } = await supabase.auth.getUser();
   if (!data.user) redirect("/login");
   const { count } = await supabase.from("company_memberships").select("company_id", { count: "exact", head: true }).eq("user_id", data.user.id);
-  if (count) redirect("/dashboard");
+  if (count) redirect("/app/dashboard");
   const suggested = (data.user.user_metadata?.company_name as string | undefined) ?? "";
   const { data: invites } = await supabase.rpc("my_invitations");
   const invitations = ((invites ?? []) as { id: string; company_name: string; role: Role }[]).map((i) => ({ id: i.id, companyName: i.company_name, role: i.role }));

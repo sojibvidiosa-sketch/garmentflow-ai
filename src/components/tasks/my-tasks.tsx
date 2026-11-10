@@ -99,12 +99,12 @@ export function MyTasks({
                       <div className="min-w-0 flex-1">
                         <p className="text-[13px] font-semibold">
                           {MILESTONE_LABEL[m.key]}{" "}
-                          <Link href={`/orders/${m.poId}`} className="font-medium text-violet hover:underline">{m.poNumber}</Link>
+                          <Link href={`/app/orders/${m.poId}`} className="font-medium text-brand-strong hover:underline">{m.poNumber}</Link>
                         </p>
                         <p className="text-caption text-secondary">Planned {formatDate(m.plannedDate)}{m.notes && ` · ${m.notes}`}</p>
                       </div>
                       <DeadlineBadge state={m.state} />
-                      <button type="button" onClick={() => setEditing(m)} className="rounded-control px-2 py-1 text-caption font-semibold text-violet hover:bg-violet-light">Update</button>
+                      <button type="button" onClick={() => setEditing(m)} className="rounded-control px-2 py-1 text-caption font-semibold text-brand-strong hover:bg-brand-light">Update</button>
                       {canEdit && (
                         <Button size="sm" variant="secondary" icon={<Check className="size-3.5" />} disabled={pending} onClick={() => run(() => completeMilestone(m.id))}>
                           Done
@@ -146,7 +146,7 @@ export function MyTasks({
                   <li key={t.id} className="flex items-start gap-3 py-2.5">
                     <input
                       type="checkbox"
-                      className="mt-1 size-4 accent-violet"
+                      className="mt-1 size-4 accent-brand"
                       aria-label={`Mark "${t.title}" done`}
                       disabled={!canEdit}
                       onChange={() => start(async () => { toggleOptimistic({ id: t.id, done: true }); const res = await setTaskDone(t.id, true); if (!res.ok) setMessage({ ok: false, text: res.error }); router.refresh(); })}
@@ -155,7 +155,7 @@ export function MyTasks({
                       <p className="text-[13px]">{t.title}</p>
                       <p className="text-caption text-secondary">
                         {t.dueDate && <span className={cn(late && "font-semibold text-red")}>Due {formatDate(t.dueDate)} · </span>}
-                        {t.poId ? <Link href={`/orders/${t.poId}`} className="text-violet hover:underline">{poNumber.get(t.poId) ?? "Order"}</Link> : "General"}
+                        {t.poId ? <Link href={`/app/orders/${t.poId}`} className="text-brand-strong hover:underline">{poNumber.get(t.poId) ?? "Order"}</Link> : "General"}
                       </p>
                     </div>
                     {late && <Badge tone="red">Late</Badge>}

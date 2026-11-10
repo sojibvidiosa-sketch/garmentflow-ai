@@ -62,7 +62,7 @@ export function TeamManager({ team, currentUserId, isAdmin, seatsLeft }: { team:
                 <Tr key={m.id}>
                   <Td>
                     <span className="flex items-center gap-3">
-                      <span className="grid size-8 place-items-center rounded-full bg-violet-light text-[11px] font-semibold text-violet">{initials(m.fullName)}</span>
+                      <span className="grid size-8 place-items-center rounded-full bg-brand-light text-[11px] font-semibold text-brand-strong">{initials(m.fullName)}</span>
                       <span>
                         <span className="block font-medium">{m.fullName}{m.id === currentUserId && <span className="text-secondary"> (you)</span>}</span>
                         <span className="text-caption text-secondary">{m.email}</span>

@@ -78,14 +78,14 @@ export function AlertList({ alerts, initialRead, live }: { alerts: AlertView[]; 
               type="button"
               aria-selected={tab === t.key}
               onClick={() => setTab(t.key)}
-              className={cn("rounded-md px-3 py-1.5 text-caption font-medium", tab === t.key ? "bg-violet-light text-violet" : "text-secondary hover:text-ink")}
+              className={cn("rounded-md px-3 py-1.5 text-caption font-medium", tab === t.key ? "bg-brand-light text-brand-strong" : "text-secondary hover:text-ink")}
             >
               {t.label} <span className="tabular-nums opacity-70">{count(t.key)}</span>
             </button>
           ))}
         </div>
         <label className="flex items-center gap-2 text-caption text-secondary">
-          <input type="checkbox" checked={hideRead} onChange={(e) => setHideRead(e.target.checked)} className="accent-violet" /> Hide read
+          <input type="checkbox" checked={hideRead} onChange={(e) => setHideRead(e.target.checked)} className="accent-brand" /> Hide read
         </label>
         <Button variant="secondary" size="sm" className="ml-auto" icon={<CheckCheck className="size-4" />} onClick={() => setRead(new Set(alerts.map((a) => a.id)))}>
           Mark all as read
@@ -113,9 +113,9 @@ export function AlertList({ alerts, initialRead, live }: { alerts: AlertView[]; 
                   </span>
                   <div className="min-w-0 flex-1">
                     <p className="flex flex-wrap items-center gap-2 text-[13px]">
-                      {!isRead && <span className="size-2 rounded-full bg-violet" aria-label="Unread" />}
+                      {!isRead && <span className="size-2 rounded-full bg-brand" aria-label="Unread" />}
                       <span className="font-semibold">{a.title}</span>
-                      <Link href={`/orders/${a.poId}`} className="font-medium text-violet hover:underline">{a.poNumber}</Link>
+                      <Link href={`/app/orders/${a.poId}`} className="font-medium text-brand-strong hover:underline">{a.poNumber}</Link>
                       <span className="text-secondary">· {a.buyer}</span>
                     </p>
                     <p className="mt-1 text-[13px] text-secondary">{a.detail}</p>

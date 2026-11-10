@@ -1,21 +1,25 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
+/** Three stacked "flow" bars: an order moving through its milestones. */
 export function LogoMark({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 28 28" className={cn("size-7", className)} aria-hidden>
-      <rect x="4.1" y="4.1" width="19.8" height="19.8" rx="3" transform="rotate(45 14 14)" fill="none" stroke="currentColor" strokeWidth="2.4" />
-      <rect x="10" y="10" width="8" height="8" rx="1" transform="rotate(45 14 14)" fill="currentColor" />
+      <rect width="28" height="28" rx="7" fill="var(--color-brand)" />
+      <rect x="7" y="8" width="14" height="2.6" rx="1.3" fill="#fff" />
+      <rect x="7" y="12.7" width="10" height="2.6" rx="1.3" fill="#fff" opacity=".85" />
+      <rect x="7" y="17.4" width="6" height="2.6" rx="1.3" fill="#fff" opacity=".7" />
+      <circle cx="20" cy="18.7" r="2.2" fill="#c4b5fd" />
     </svg>
   );
 }
 
-export function Logo({ href = "/", suffix = "", className }: { href?: string; suffix?: string; className?: string }) {
+export function Logo({ href = "/", suffix = " AI", className }: { href?: string; suffix?: string; className?: string }) {
   return (
-    <Link href={href} className={cn("flex items-center gap-2.5 text-[17px] font-semibold text-ink", className)}>
-      <LogoMark className="text-violet" />
+    <Link href={href} className={cn("flex items-center gap-2 text-[15px] font-semibold tracking-tight text-ink", className)}>
+      <LogoMark />
       <span>
-        GarmentFlow{suffix && <span className="text-violet">{suffix}</span>}
+        GarmentFlow{suffix && <span className="text-ai-strong">{suffix}</span>}
       </span>
     </Link>
   );

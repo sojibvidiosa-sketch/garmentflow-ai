@@ -101,14 +101,14 @@ export function PoTable({ rows, buyers }: { rows: PoRow[]; buyers: string[] }) {
               icon={<Search className="size-5" />}
               title="No orders match these filters"
               description="Try a different PO number, buyer or status."
-              action={<Button variant="secondary" onClick={() => { update({ q: "", buyer: "", status: "" }); router.replace("/orders"); }}>Clear filters</Button>}
+              action={<Button variant="secondary" onClick={() => { update({ q: "", buyer: "", status: "" }); router.replace("/app/orders"); }}>Clear filters</Button>}
             />
           ) : (
             <EmptyState
               icon={<FileSearch className="size-5" />}
               title="No purchase orders yet"
               description="Upload your first buyer document to begin."
-              action={<ButtonLink href="/orders/new">Upload document</ButtonLink>}
+              action={<ButtonLink href="/app/import">Upload document</ButtonLink>}
             />
           )
         ) : (
@@ -124,9 +124,9 @@ export function PoTable({ rows, buyers }: { rows: PoRow[]; buyers: string[] }) {
               </thead>
               <tbody>
                 {visible.map((r) => (
-                  <Tr key={r.id} className="cursor-pointer" onClick={() => router.push(`/orders/${r.id}`)}>
+                  <Tr key={r.id} className="cursor-pointer" onClick={() => router.push(`/app/orders/${r.id}`)}>
                     <Td className="font-semibold">
-                      <Link href={`/orders/${r.id}`} className="hover:text-violet" onClick={(e) => e.stopPropagation()}>
+                      <Link href={`/app/orders/${r.id}`} className="hover:text-brand-strong" onClick={(e) => e.stopPropagation()}>
                         {r.poNumber}
                       </Link>
                     </Td>

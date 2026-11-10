@@ -19,7 +19,7 @@ export function SampleDataCard() {
         description="Add your first purchase order, or load clearly labelled sample orders to explore every screen. Sample data can be deleted later."
         action={
           <form action={action} className="flex flex-wrap justify-center gap-2">
-            <ButtonLink href="/orders/new" variant="secondary">Upload a buyer document</ButtonLink>
+            <ButtonLink href="/app/import" variant="secondary">Upload a buyer document</ButtonLink>
             <Button type="submit" loading={pending}>Load sample data</Button>
           </form>
         }

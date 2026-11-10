@@ -83,7 +83,7 @@ export async function createTask(input: z.infer<typeof taskSchema>): Promise<Act
     assignee_id: v.assigneeId || guard.ctx.userId,
   });
   if (error) return dbFail(error.message, "The task could not be added.");
-  revalidatePath("/tasks");
+  revalidatePath("/app/tasks");
   return { ok: true, message: "Task added." };
 }
 
@@ -93,7 +93,7 @@ export async function setTaskDone(id: string, done: boolean): Promise<ActionResu
   if (!z.uuid().safeParse(id).success) return { ok: false, error: "Unknown task." };
   const { error } = await guard.ctx.supabase.from("tasks").update({ done_at: done ? new Date().toISOString() : null }).eq("id", id).eq("company_id", guard.ctx.companyId);
   if (error) return dbFail(error.message, "The task could not be updated.");
-  revalidatePath("/tasks");
+  revalidatePath("/app/tasks");
   return { ok: true };
 }
 
@@ -103,7 +103,7 @@ export async function deleteTask(id: string): Promise<ActionResult> {
   if (!z.uuid().safeParse(id).success) return { ok: false, error: "Unknown task." };
   const { error } = await guard.ctx.supabase.from("tasks").delete().eq("id", id).eq("company_id", guard.ctx.companyId);
   if (error) return dbFail(error.message, "The task could not be deleted.");
-  revalidatePath("/tasks");
+  revalidatePath("/app/tasks");
   return { ok: true };
 }
 

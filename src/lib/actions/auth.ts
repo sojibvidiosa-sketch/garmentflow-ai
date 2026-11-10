@@ -23,7 +23,7 @@ async function siteUrl() {
 }
 
 /** Only allow redirects to paths inside this app. */
-function safeNext(value: FormDataEntryValue | null, fallback = "/dashboard") {
+function safeNext(value: FormDataEntryValue | null, fallback = "/app/dashboard") {
   const next = typeof value === "string" ? value : "";
   return next.startsWith("/") && !next.startsWith("//") ? next : fallback;
 }
@@ -75,7 +75,7 @@ export async function signUp(_prev: FormState, formData: FormData): Promise<Form
   }
   if (!data.session) {
     // Email confirmation is on: the workspace is created after the user confirms.
-    return { message: `We sent a confirmation link to ${parsed.data.email}. Open it to finish setting up ${companyName}.` };
+    redirect(`/verify-email?email=${encodeURIComponent(parsed.data.email)}`);
   }
   // Invited people join the inviting company instead of getting a new one.
   const { data: invites } = await supabase.rpc("my_invitations");
@@ -83,7 +83,22 @@ export async function signUp(_prev: FormState, formData: FormData): Promise<Form
   const { data: companyId, error: rpcError } = await supabase.rpc("create_company", { company_name: companyName });
   if (rpcError) redirect("/onboarding");
   (await cookies()).set(ACTIVE_COMPANY_COOKIE, String(companyId), { httpOnly: true, sameSite: "lax", secure: true, path: "/" });
-  redirect("/dashboard");
+  redirect("/app/dashboard");
+}
+
+/** Sends the sign-up confirmation email again. Same answer whether or not the address is registered. */
+export async function resendVerification(_prev: FormState, formData: FormData): Promise<FormState> {
+  if (!isSupabaseConfigured) return NOT_CONFIGURED;
+  const parsed = z.object({ email }).safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return { fieldErrors: fieldErrors(parsed.error) };
+  const supabase = await createClient();
+  const { error } = await supabase.auth.resend({
+    type: "signup",
+    email: parsed.data.email,
+    options: { emailRedirectTo: `${await siteUrl()}/auth/confirm?next=/onboarding` },
+  });
+  if (error?.status === 429) return { error: "Please wait a minute before requesting another email." };
+  return { message: "If that address is waiting for confirmation, a new link is on its way." };
 }
 
 export async function signOut() {
@@ -117,7 +132,7 @@ export async function updatePassword(_prev: FormState, formData: FormData): Prom
   const supabase = await createClient();
   const { error } = await supabase.auth.updateUser({ password: parsed.data.password });
   if (error) return { error: "This reset link has expired. Request a new one." };
-  redirect("/dashboard");
+  redirect("/app/dashboard");
 }
 
 export async function createCompany(_prev: FormState, formData: FormData): Promise<FormState> {
@@ -128,5 +143,5 @@ export async function createCompany(_prev: FormState, formData: FormData): Promi
   const { data, error } = await supabase.rpc("create_company", { company_name: parsed.data.companyName });
   if (error) return { error: error.message.includes("limit") ? "You have reached the workspace limit." : "Could not create the workspace. Try again." };
   (await cookies()).set(ACTIVE_COMPANY_COOKIE, String(data), { httpOnly: true, sameSite: "lax", secure: true, path: "/" });
-  redirect("/dashboard");
+  redirect("/app/dashboard");
 }

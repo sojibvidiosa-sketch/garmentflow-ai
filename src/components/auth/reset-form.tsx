@@ -14,7 +14,7 @@ export function ResetForm({ enabled }: { enabled: boolean }) {
   const error = state.fieldErrors?.email;
 
   return (
-    <form action={action} noValidate className="mt-10 space-y-6">
+    <form action={action} noValidate className="mt-8 space-y-5">
       <Field label="Work email" htmlFor="email" error={error}>
         <Input id="email" name="email" type="email" autoComplete="email" placeholder="you@company.com" aria-invalid={!!error} />
       </Field>
@@ -22,8 +22,8 @@ export function ResetForm({ enabled }: { enabled: boolean }) {
       {state.message && <Notice tone="success">{state.message}</Notice>}
       {state.error && enabled && <Notice tone="error">{state.error}</Notice>}
       <Button type="submit" className="w-full" loading={pending} disabled={!enabled}>Send reset link</Button>
-      <Link href="/login" className="inline-flex items-center gap-1.5 text-[13px] font-medium text-violet hover:underline">
-        <ArrowLeft className="size-4" /> Back to login
+      <Link href="/login" className="inline-flex items-center gap-1.5 text-[13px] font-medium text-brand-strong hover:underline">
+        <ArrowLeft className="size-4" /> Back to sign in
       </Link>
     </form>
   );
