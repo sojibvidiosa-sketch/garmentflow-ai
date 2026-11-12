@@ -98,3 +98,23 @@ staff roles; lead status; invitation emails.
 - The public contact email falls back to a placeholder until `NEXT_PUBLIC_CONTACT_EMAIL` is set.
 - Invitations are created in the database but no email is sent yet; the invited person must be told to sign up, or be given the `/invite/<id>` link.
 - Merging this branch to `main` will rebuild the GitHub Pages demo with the new interface. It is labelled as a sample-data preview.
+
+## 8. Update 2026-11-12 — plans, bKash billing, Vercel
+
+Founder decisions recorded: plans are Free, Starter ৳2,999 and Business ৳6,999 per company per month;
+contact email `hellocraftkitto@gmail.com`; payments are collected manually by bKash.
+The limits per plan (members / active POs / AI requests per month: 2/10/20, 5/60/300, 15/300/1,500)
+are a proposal by the developer and can be changed in one migration plus `src/lib/plans.ts`.
+
+| Item | Status |
+| --- | --- |
+| Migration `20261110000005_plans_and_manual_billing.sql` applied to Supabase | PASS |
+| O14 Plan & billing (`/office/billing`) and S07 Payments (`/admin/billing`) | Built |
+| Landing page shows the confirmed prices | Done |
+| `npm test` | PASS, 44/44 (2 new database tests for plans and payments) |
+| Live browser test with two temporary accounts (deleted afterwards): sign in, create company, starts on Free 2/10/20, empty form rejected, payment recorded as waiting with plan unchanged, duplicate TrxID refused, company admin cannot see platform payments, platform admin approves, company becomes Starter 5/60/300 with paid-until date, platform admin has no access to the company workspace | PASS |
+| Billing page sideways scroll at 360 / 390 / 768 / 1024 | PASS after one fix |
+| Automatic charging, automatic downgrade when the paid period ends, renewal reminders, invoices/receipts | NOT BUILT — a platform admin must change an expired plan by hand under Subscriptions |
+| Whether the bKash number is a personal or merchant account | NOT CONFIRMED — the screen says "send to", which suits a personal number |
+
+Screens now: 30 of 65.

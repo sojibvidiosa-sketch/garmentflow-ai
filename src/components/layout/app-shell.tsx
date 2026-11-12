@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { Suspense, useState, type ReactNode } from "react";
 import {
   ArrowLeftRight,
+  Banknote,
   BarChart3,
   Bell,
   Building2,
@@ -81,6 +82,7 @@ const NAV: Record<Area, NavGroup[]> = {
       label: "Company",
       items: [
         { label: "Team", href: "/office/team", icon: Users },
+        { label: "Plan & billing", href: "/office/billing", icon: CreditCard },
         { label: "Settings", href: "/office/settings", icon: Settings },
       ],
     },
@@ -92,6 +94,7 @@ const NAV: Record<Area, NavGroup[]> = {
         { label: "Overview", href: "/admin", icon: LayoutDashboard },
         { label: "Companies", href: "/admin/companies", icon: Building2 },
         { label: "Subscriptions", href: "/admin/subscriptions", icon: CreditCard },
+        { label: "Payments", href: "/admin/billing", icon: Banknote },
       ],
     },
     {

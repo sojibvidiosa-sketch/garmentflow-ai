@@ -106,7 +106,7 @@ export interface PurchaseOrder {
 export interface Company {
   id: string;
   name: string;
-  plan: "pilot" | "starter" | "business";
+  plan: "free" | "pilot" | "starter" | "business";
   subscription: "trialing" | "active" | "past_due" | "cancelled";
   activeUsers: number;
   activePos: number;

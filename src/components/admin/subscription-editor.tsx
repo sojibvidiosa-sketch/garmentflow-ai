@@ -12,8 +12,8 @@ import { SUB_TONE } from "./admin-tables";
 import { updateSubscription } from "@/lib/actions/admin";
 import type { AdminCompany } from "@/lib/data";
 
-const PRESETS: Record<string, [number, number, number]> = { pilot: [10, 150, 300], starter: [3, 30, 100], business: [10, 150, 500], enterprise: [50, 2000, 3000] };
-type Plan = "pilot" | "starter" | "business" | "enterprise";
+const PRESETS: Record<string, [number, number, number]> = { free: [2, 10, 20], pilot: [5, 50, 300], starter: [5, 60, 300], business: [15, 300, 1500], enterprise: [50, 2000, 3000] };
+type Plan = "free" | "pilot" | "starter" | "business" | "enterprise";
 type Status = "trialing" | "active" | "past_due" | "cancelled";
 
 export function SubscriptionEditor({ companies }: { companies: AdminCompany[] }) {

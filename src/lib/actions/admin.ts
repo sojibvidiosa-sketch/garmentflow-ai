@@ -8,7 +8,7 @@ import { DEMO_MESSAGE, type ActionResult } from "./types";
 
 const subSchema = z.object({
   companyId: z.uuid(),
-  plan: z.enum(["pilot", "starter", "business", "enterprise"]),
+  plan: z.enum(["free", "pilot", "starter", "business", "enterprise"]),
   status: z.enum(["trialing", "active", "past_due", "cancelled"]),
   seatLimit: z.number().int().min(1).max(1000),
   poLimit: z.number().int().min(1).max(100000),

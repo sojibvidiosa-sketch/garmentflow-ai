@@ -32,7 +32,7 @@ export function dbFail(message: string | undefined, fallback: string): ActionRes
   const m = message ?? "";
   if (m.includes("duplicate key") && m.includes("po_number")) return { ok: false, error: "A purchase order with this PO number already exists." };
   if (m.includes("duplicate key")) return { ok: false, error: "This already exists." };
-  if (m.includes("limit reached")) return { ok: false, error: `${m.replace(/^.*?:\s*/, "")}. Ask us to upgrade your plan.` };
+  if (m.includes("limit reached")) return { ok: false, error: `${m.replace(/^.*?:\s*/, "")}. Upgrade under Office admin → Plan & billing.` };
   if (m.includes("row-level security") || m.includes("permission denied")) return { ok: false, error: "You do not have permission to do this." };
   if (m.includes("at least one active Company Admin")) return { ok: false, error: "A company needs at least one active Company Admin." };
   if (m.includes("ship date")) return { ok: false, error: "Set a ship date before creating the T&A plan." };

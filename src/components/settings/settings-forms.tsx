@@ -76,7 +76,7 @@ export function SettingsForms({ settings, fullName, email, isAdmin }: { settings
           <Meter label="Team seats" used={settings.seatsUsed} limit={settings.seatLimit} />
           <Meter label="Active purchase orders" used={settings.activePos} limit={settings.poLimit} />
           <Meter label="AI requests this month" used={settings.aiJobsThisMonth} limit={settings.aiJobLimit} />
-          <p className="text-caption text-secondary">Estimated AI cost this month: {formatUsd(settings.aiCostThisMonth)}. To change your plan, contact GarmentFlow support.</p>
+          <p className="text-caption text-secondary">Estimated AI cost this month: {formatUsd(settings.aiCostThisMonth)}. Change your plan under Plan &amp; billing.</p>
         </CardBody>
       </Card>
 

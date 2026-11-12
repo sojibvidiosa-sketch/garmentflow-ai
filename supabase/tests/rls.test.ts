@@ -11,6 +11,7 @@ import { join } from "node:path";
 import { PGlite } from "@electric-sql/pglite";
 import pg from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { PLAN_ORDER, PLANS } from "../../src/lib/plans";
 
 interface Tx {
   query<T>(sql: string, params?: unknown[]): Promise<{ rows: T[] }>;
@@ -115,6 +116,8 @@ beforeAll(async () => {
   );
   companyA = (await as<{ id: string }>(A, `select public.create_company('Alpha Sourcing') as id`))[0]!.id;
   companyB = (await as<{ id: string }>(B, `select public.create_company('Bravo Buying') as id`))[0]!.id;
+  // New companies start on the Free plan (2 seats); most tests below need a roomier plan.
+  await db.query(`update public.subscriptions set seat_limit = 5, po_limit = 50 where company_id in ($1, $2)`, [companyA, companyB]);
   // Alice invites a read-only viewer into company A.
   await as(A, `insert into public.company_memberships (company_id, user_id, role) values ($1, $2, 'viewer')`, [companyA, VIEWER]);
 
@@ -257,6 +260,47 @@ describe("multi-company isolation (RLS)", () => {
     });
     expect(await as(A, `select * from public.leads`)).toEqual([]);
     expect(await as(B, `select email from public.leads`)).toEqual([{ email: "rina@co.test" }]);
+  });
+
+  it("starts new companies on the Free plan and keeps plan prices in step with the app", async () => {
+    await db.query(`insert into auth.users (id, email) values ('00000000-0000-0000-0000-0000000000f1', 'f1@e.test')`);
+    const E = "00000000-0000-0000-0000-0000000000f1";
+    const cid = (await as<{ id: string }>(E, `select public.create_company('Echo Exports') as id`))[0]!.id;
+    expect(await as(E, `select plan, status, seat_limit, po_limit, ai_job_limit from public.subscriptions where company_id = $1`, [cid])).toEqual([
+      { plan: "free", status: "active", seat_limit: PLANS.free.seats, po_limit: PLANS.free.activePos, ai_job_limit: PLANS.free.aiRequests },
+    ]);
+    const rows = await as<{ key: string; price_bdt: number; seat_limit: number; po_limit: number; ai_job_limit: number }>(E, `select * from public.plans where self_serve order by position`);
+    expect(rows.map((r) => [r.key, r.price_bdt, r.seat_limit, r.po_limit, r.ai_job_limit])).toEqual(
+      PLAN_ORDER.map((k) => [k, PLANS[k].priceBdt, PLANS[k].seats, PLANS[k].activePos, PLANS[k].aiRequests]),
+    );
+  });
+
+  it("activates a paid plan only after a platform admin approves the bKash payment", async () => {
+    // Only the Company Admin of that company may submit, and the amount comes from the plan, not the caller.
+    await expect(as(VIEWER, `select public.submit_payment_request($1, 'starter', '01700000000', 'ABC12345XY')`, [companyA])).rejects.toThrow(/Company Admin/);
+    await expect(as(B, `select public.submit_payment_request($1, 'starter', '01700000000', 'ABC12345XY')`, [companyA])).rejects.toThrow(/Company Admin/);
+    await expect(as(A, `select public.submit_payment_request($1, 'free', '01700000000', 'ABC12345XY')`, [companyA])).rejects.toThrow(/cannot be paid/);
+    await expect(as(A, `select public.submit_payment_request($1, 'starter', '12345', 'ABC12345XY')`, [companyA])).rejects.toThrow();
+    const rid = (await as<{ id: string }>(A, `select public.submit_payment_request($1, 'starter', '01700000000', 'abc12345xy') as id`, [companyA]))[0]!.id;
+    expect(await as(A, `select amount_bdt, status, trx_id from public.payment_requests where id = $1`, [rid])).toEqual([{ amount_bdt: 2999, status: "pending", trx_id: "ABC12345XY" }]);
+    // The same transaction ID cannot be reused by another company.
+    await expect(as(B, `select public.submit_payment_request($1, 'business', '01800000000', 'ABC12345XY')`, [companyB])).rejects.toThrow(/duplicate/);
+    // Other companies and non-admin members cannot see it; nobody can edit it directly.
+    expect(await as(B, `select 1 from public.payment_requests`)).toEqual([]);
+    expect(await as(VIEWER, `select 1 from public.payment_requests`)).toEqual([]);
+    await expect(as(A, `update public.payment_requests set status = 'approved' where id = $1`, [rid])).rejects.toThrow(/permission denied/);
+    // Submitting does not change the plan, and the company cannot approve itself.
+    expect((await as<{ plan: string }>(A, `select plan from public.subscriptions where company_id = $1`, [companyA]))[0]?.plan).toBe("free");
+    await expect(as(A, `select public.admin_review_payment($1, true)`, [rid])).rejects.toThrow(/platform admins/);
+    await expect(as(A, `select * from public.admin_payment_requests()`)).rejects.toThrow(/platform admins/);
+
+    await db.query(`insert into public.platform_admins (user_id) values ($1) on conflict do nothing`, [B]);
+    expect((await as<{ trx_id: string }>(B, `select trx_id from public.admin_payment_requests()`)).map((r) => r.trx_id)).toContain("ABC12345XY");
+    await as(B, `select public.admin_review_payment($1, true, 'matched statement')`, [rid]);
+    const sub = (await as<{ plan: string; status: string; seat_limit: number; days: number }>(A, `select plan, status, seat_limit, period_end - current_date as days from public.subscriptions where company_id = $1`, [companyA]))[0];
+    expect(sub).toEqual({ plan: "starter", status: "active", seat_limit: PLANS.starter.seats, days: 30 });
+    await expect(as(B, `select public.admin_review_payment($1, true)`, [rid])).rejects.toThrow(/already reviewed/);
+    await db.query(`delete from public.platform_admins where user_id = $1`, [B]);
   });
 
   it("signed-out (anon) requests read nothing", async () => {

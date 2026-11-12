@@ -3,7 +3,7 @@ import { Logo } from "./logo";
 import { ButtonLink } from "@/components/ui/button";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 
-export const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL || "hello@garmentflow.example";
+export const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL || "hellocraftkitto@gmail.com";
 
 const links = [
   { href: "/#product", label: "Product" },

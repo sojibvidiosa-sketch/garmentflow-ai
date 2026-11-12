@@ -4,6 +4,7 @@ import { CONTACT_EMAIL } from "@/components/layout/site-header";
 import { ContactForm } from "@/components/marketing/contact-form";
 import { ProductPreview, ReviewPreview } from "@/components/marketing/product-preview";
 import { ButtonLink } from "@/components/ui/button";
+import { PLAN_ORDER, PLANS, formatBdt } from "@/lib/plans";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 
 export const metadata: Metadata = {
@@ -41,12 +42,6 @@ const features = [
     title: "Email drafts and reports",
     body: "Buyer and supplier follow-ups drafted from approved order data, plus order summaries for managers. You edit and send; nothing is sent automatically.",
   },
-];
-
-const plans = [
-  { name: "Starter", who: "For small teams getting organised", points: ["Purchase orders and T&A tracking", "AI document import with review", "Email drafts and order reports"] },
-  { name: "Business", who: "For growing buying houses", points: ["Everything in Starter", "More users, orders and AI usage", "Team roles and manager reports"], featured: true },
-  { name: "Enterprise", who: "For larger houses and factories", points: ["Custom limits and permissions", "Onboarding and data import help", "Integration work on request"] },
 ];
 
 const kicker = "text-caption font-medium tracking-wide text-brand-strong uppercase";
@@ -155,26 +150,43 @@ export default function LandingPage() {
           <p className={kicker}>Pricing</p>
           <h2 className={h2}>Plans sized for your team</h2>
           <p className="mt-3 max-w-[560px] text-[15px] leading-relaxed text-secondary">
-            We are onboarding pilot companies now. Pricing is shared on request and confirmed with you before any subscription starts.
+            One price per company, not per user. All plans include the same tools; they differ in how many people, orders and AI requests they cover.
           </p>
           <div className="mt-10 grid gap-5 lg:grid-cols-3">
-            {plans.map((p) => (
-              <div key={p.name} className={`flex flex-col rounded-card border bg-surface p-6 ${p.featured ? "border-brand ring-1 ring-brand" : "border-border"}`}>
-                <h3 className="text-[16px] font-semibold text-ink">{p.name}</h3>
-                <p className="mt-1 text-[13px] text-secondary">{p.who}</p>
-                <p className="mt-5 text-[22px] font-semibold tracking-tight text-ink">Pricing on request</p>
-                <ul className="mt-5 flex-1 space-y-2.5 border-t border-border pt-5">
-                  {p.points.map((pt) => (
-                    <li key={pt} className="flex gap-2.5 text-[13px] text-secondary">
-                      <Check className="mt-0.5 size-4 shrink-0 text-green" aria-hidden />
-                      {pt}
-                    </li>
-                  ))}
-                </ul>
-                <ButtonLink href="/#contact" variant={p.featured ? "primary" : "secondary"} className="mt-7 w-full">Contact sales</ButtonLink>
-              </div>
-            ))}
+            {PLAN_ORDER.map((k) => {
+              const p = PLANS[k];
+              const featured = k === "starter";
+              return (
+                <div key={k} className={`flex flex-col rounded-card border bg-surface p-6 ${featured ? "border-brand ring-1 ring-brand" : "border-border"}`}>
+                  <h3 className="text-[16px] font-semibold text-ink">{p.name}</h3>
+                  <p className="mt-1 text-[13px] text-secondary">{p.who}</p>
+                  <p className="mt-5 flex items-baseline gap-1.5">
+                    <span className="text-[32px] leading-none font-semibold tracking-tight text-ink tabular-nums">{p.priceBdt ? formatBdt(p.priceBdt) : "Free"}</span>
+                    {p.priceBdt > 0 && <span className="text-[13px] text-secondary">per month</span>}
+                  </p>
+                  <ul className="mt-6 flex-1 space-y-2.5 border-t border-border pt-5">
+                    {[
+                      `Up to ${p.seats} team members`,
+                      `Up to ${p.activePos} active purchase orders`,
+                      `${p.aiRequests.toLocaleString("en-US")} AI requests per month`,
+                      "T&A tracking, delay alerts and reports",
+                    ].map((pt) => (
+                      <li key={pt} className="flex gap-2.5 text-[13px] text-secondary">
+                        <Check className="mt-0.5 size-4 shrink-0 text-green" aria-hidden />
+                        {pt}
+                      </li>
+                    ))}
+                  </ul>
+                  <ButtonLink href={isSupabaseConfigured ? "/signup" : "/#contact"} variant={featured ? "primary" : "secondary"} className="mt-7 w-full">
+                    {p.priceBdt ? "Start free, upgrade later" : "Create a free workspace"}
+                  </ButtonLink>
+                </div>
+              );
+            })}
           </div>
+          <p className="mt-6 text-[13px] text-secondary">
+            Every workspace starts on Free. Paid plans are billed monthly per company and paid by bKash from inside the app; a person verifies each payment before the plan changes. An AI request is one document import, email draft or report summary.
+          </p>
         </div>
       </section>
 

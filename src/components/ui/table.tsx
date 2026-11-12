@@ -16,12 +16,13 @@ export function Table({ className, children, ...props }: ComponentProps<"table">
   );
 }
 
-export function Th({ className, children, ...props }: ComponentProps<"th">) {
+export function Th({ className, children, right, ...props }: ComponentProps<"th"> & { right?: boolean }) {
   return (
     <th
       scope="col"
       className={cn(
         "border-y border-border bg-bg px-4 py-2.5 text-left text-[12px] font-medium text-secondary first:rounded-l-md first:border-l last:rounded-r-md last:border-r",
+        right && "text-right",
         className,
       )}
       {...props}
@@ -57,8 +58,8 @@ export function SortableTh({
   );
 }
 
-export function Td({ className, ...props }: ComponentProps<"td">) {
-  return <td className={cn("border-b border-border px-4 py-3 text-ink", className)} {...props} />;
+export function Td({ className, right, ...props }: ComponentProps<"td"> & { right?: boolean }) {
+  return <td className={cn("border-b border-border px-4 py-3 text-ink", right && "text-right tabular-nums", className)} {...props} />;
 }
 
 export function Tr({ className, ...props }: ComponentProps<"tr">) {

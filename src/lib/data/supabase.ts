@@ -395,11 +395,11 @@ export async function getCompanySettings(): Promise<CompanySettings> {
   ]);
   return {
     companyName: ctx.companyName,
-    plan: sub?.plan ?? "pilot",
-    status: sub?.status ?? "trialing",
-    seatLimit: sub?.seat_limit ?? 5,
-    poLimit: sub?.po_limit ?? 50,
-    aiJobLimit: sub?.ai_job_limit ?? 300,
+    plan: sub?.plan ?? "free",
+    status: sub?.status ?? "active",
+    seatLimit: sub?.seat_limit ?? 2,
+    poLimit: sub?.po_limit ?? 10,
+    aiJobLimit: sub?.ai_job_limit ?? 20,
     seatsUsed: seats ?? 0,
     activePos: pos ?? 0,
     aiJobsThisMonth: jobs?.length ?? 0,
@@ -436,4 +436,40 @@ export async function getAdminData(): Promise<import("./admin-types").AdminData>
     activity: ((activity.data ?? []) as A[]).map((a) => ({ companyName: a.company_name, action: a.action, targetType: a.target_type, createdAt: a.created_at })),
     leads: (leads.data ?? []).map((l) => ({ id: l.id, fullName: l.full_name, email: l.email, company: l.company, phone: l.phone, teamSize: l.team_size, message: l.message, createdAt: l.created_at })),
   };
+}
+
+/** Plan, usage and bKash payment history for the signed-in user's company. */
+export async function getBilling(): Promise<import("./billing-types").Billing> {
+  const ctx = await getContext();
+  const [s, { data: sub }, { data: payments }] = await Promise.all([
+    getCompanySettings(),
+    ctx.supabase.from("subscriptions").select("period_end").eq("company_id", ctx.companyId).maybeSingle(),
+    ctx.supabase
+      .from("payment_requests")
+      .select("id, plan, amount_bdt, sender_number, trx_id, status, review_note, created_at, reviewed_at")
+      .eq("company_id", ctx.companyId)
+      .order("created_at", { ascending: false })
+      .limit(50),
+  ]);
+  return {
+    plan: s.plan, status: s.status, periodEnd: sub?.period_end ?? null,
+    seatLimit: s.seatLimit, poLimit: s.poLimit, aiJobLimit: s.aiJobLimit,
+    seatsUsed: s.seatsUsed, activePos: s.activePos, aiJobsThisMonth: s.aiJobsThisMonth,
+    payments: (payments ?? []).map((p) => ({
+      id: p.id, plan: p.plan, amountBdt: p.amount_bdt, senderNumber: p.sender_number, trxId: p.trx_id,
+      status: p.status, reviewNote: p.review_note, createdAt: p.created_at, reviewedAt: p.reviewed_at,
+    })),
+  };
+}
+
+/** Platform admins only — the database function refuses everyone else. */
+export async function getAdminPayments(): Promise<import("./billing-types").AdminPaymentRequest[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("admin_payment_requests");
+  if (error) throw new Error("Could not load payment requests.");
+  return ((data ?? []) as Record<string, never>[]).map((p) => ({
+    id: p.id, companyId: p.company_id, companyName: p.company_name, plan: p.plan, amountBdt: p.amount_bdt,
+    senderNumber: p.sender_number, trxId: p.trx_id, status: p.status, reviewNote: p.review_note,
+    createdAt: p.created_at, reviewedAt: p.reviewed_at,
+  }));
 }

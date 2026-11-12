@@ -173,9 +173,9 @@ export async function getCompanySettings(): Promise<import("./supabase").Company
     companyName: demo.DEMO_COMPANY_NAME,
     plan: c.plan,
     status: c.subscription,
-    seatLimit: 10,
-    poLimit: 150,
-    aiJobLimit: 300,
+    seatLimit: 15,
+    poLimit: 300,
+    aiJobLimit: 1500,
     seatsUsed: demo.members.length,
     activePos: demo.purchaseOrders.filter((o) => o.status !== "shipped" && o.status !== "cancelled").length,
     aiJobsThisMonth: c.aiJobs30d,
@@ -189,7 +189,7 @@ export async function getCompanySettings(): Promise<import("./supabase").Company
 export async function getAdminData(): Promise<AdminData> {
   if (isSupabaseConfigured) return (await live()).getAdminData();
   const name = new Map(demo.companies.map((c) => [c.id, c.name]));
-  const limits = { pilot: [10, 150, 300], starter: [3, 30, 100], business: [10, 150, 300] } as const;
+  const limits = { free: [2, 10, 20], pilot: [5, 50, 300], starter: [5, 60, 300], business: [15, 300, 1500] } as const;
   return {
     companies: demo.companies.map((c) => ({
       id: c.id, name: c.name, createdAt: `${c.createdAt}T08:00:00Z`, plan: c.plan, status: c.subscription,
@@ -226,4 +226,18 @@ export async function getReportData() {
     activity: demo.activity,
     today: demo.DEMO_TODAY,
   };
+}
+
+export type { AdminPaymentRequest, Billing, PaymentRequest } from "./billing-types";
+
+export async function getBilling(): Promise<import("./billing-types").Billing> {
+  if (isSupabaseConfigured) return (await live()).getBilling();
+  const s = await getCompanySettings();
+  // Sample workspace: no payments exist, so none are shown.
+  return { plan: s.plan, status: s.status, periodEnd: null, seatLimit: s.seatLimit, poLimit: s.poLimit, aiJobLimit: s.aiJobLimit, seatsUsed: s.seatsUsed, activePos: s.activePos, aiJobsThisMonth: s.aiJobsThisMonth, payments: [] };
+}
+
+export async function getAdminPayments(): Promise<import("./billing-types").AdminPaymentRequest[]> {
+  if (isSupabaseConfigured) return (await live()).getAdminPayments();
+  return [];
 }

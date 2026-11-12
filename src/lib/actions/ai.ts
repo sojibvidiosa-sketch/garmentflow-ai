@@ -25,7 +25,7 @@ async function underQuota(ctx: Ctx): Promise<boolean> {
     ctx.supabase.from("subscriptions").select("ai_job_limit").eq("company_id", ctx.companyId).maybeSingle(),
     ctx.supabase.from("ai_jobs").select("id", { count: "exact", head: true }).eq("company_id", ctx.companyId).gte("created_at", start.toISOString()),
   ]);
-  return (count ?? 0) < (sub?.ai_job_limit ?? 300);
+  return (count ?? 0) < (sub?.ai_job_limit ?? 20);
 }
 
 /** Runs an AI task and records it in ai_jobs (status, tokens, cost). */
